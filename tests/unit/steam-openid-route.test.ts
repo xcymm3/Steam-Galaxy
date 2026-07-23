@@ -94,8 +94,12 @@ describe("Steam OpenID routes", () => {
       .mockResolvedValue(new Response("is_valid:true\n", { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
 
+    const proxiedCallbackUrl = createAssertion(openIdState.state);
+    proxiedCallbackUrl.protocol = "http:";
+    proxiedCallbackUrl.host = "localhost:10000";
+
     const response = await callback(
-      new NextRequest(createAssertion(openIdState.state), {
+      new NextRequest(proxiedCallbackUrl, {
         headers: {
           cookie: `${steamOpenIdStateCookieName}=${openIdState.cookieValue}`,
         },
@@ -115,6 +119,8 @@ describe("Steam OpenID routes", () => {
   });
 
   it("clears the attempt and returns a distinct home notice when the user cancels", async () => {
+    vi.stubEnv("APP_ORIGIN", origin);
+
     const response = await callback(
       new NextRequest(`${origin}/api/auth/steam/callback?openid.mode=cancel`),
     );

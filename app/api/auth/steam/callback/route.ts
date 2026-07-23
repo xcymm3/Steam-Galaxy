@@ -16,8 +16,8 @@ export const runtime = "nodejs";
 
 const noStoreHeaders = { "Cache-Control": "private, no-store" };
 
-function redirectHome(request: NextRequest, auth: string) {
-  const destination = new URL("/", request.nextUrl.origin);
+function redirectHome(origin: string, auth: string) {
+  const destination = new URL("/", origin);
   destination.searchParams.set("auth", auth);
   return NextResponse.redirect(destination, { headers: noStoreHeaders });
 }
@@ -49,15 +49,17 @@ function errorStatus(error: unknown) {
 }
 
 export async function GET(request: NextRequest) {
-  const mode = request.nextUrl.searchParams.get("openid.mode");
-  if (mode === "cancel") {
-    const response = redirectHome(request, "cancelled");
-    clearOpenIdState(response);
-    return response;
-  }
+  let origin = request.nextUrl.origin;
 
   try {
-    const origin = getSteamOpenIdAppOrigin(request.url);
+    origin = getSteamOpenIdAppOrigin(request.url);
+    const mode = request.nextUrl.searchParams.get("openid.mode");
+    if (mode === "cancel") {
+      const response = redirectHome(origin, "cancelled");
+      clearOpenIdState(response);
+      return response;
+    }
+
     const state = request.nextUrl.searchParams.get("state");
     verifySteamOpenIdState(
       request.cookies.get(steamOpenIdStateCookieName)?.value,
@@ -66,7 +68,7 @@ export async function GET(request: NextRequest) {
     const steamId = await verifySteamOpenIdAssertion(request.nextUrl, {
       expectedReturnTo: createSteamOpenIdCallbackUrl(origin, state!),
     });
-    const response = redirectHome(request, "success");
+    const response = redirectHome(origin, "success");
 
     clearOpenIdState(response);
     response.cookies.set({
@@ -81,7 +83,7 @@ export async function GET(request: NextRequest) {
 
     return response;
   } catch (error) {
-    const response = redirectHome(request, errorStatus(error));
+    const response = redirectHome(origin, errorStatus(error));
     clearOpenIdState(response);
     return response;
   }
