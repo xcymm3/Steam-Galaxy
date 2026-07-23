@@ -1,0 +1,9 @@
+packages:
+  - .
+
+saveExact: true
+engineStrict: true
+nodeVersion: 22.17.0
+
+allowBuilds:
+  sharp: true

@@ -1,0 +1,1116 @@
+/* Hallmark · genre: atmospheric · macrostructure: Narrative Workflow · theme: Midnight · tone: deep-night playful · anchor hue: amber · enrichment: none · nav: N9 · footer: Ft5 · contrast: pass (40–41) · slop: static pass; rendered viewport pending */
+/* Hallmark · pre-emit critique: P5 H5 E4 S5 R5 V5 */
+
+.recoveryState,
+.storyRoot {
+  min-height: 100dvh;
+  background: var(--color-story-paper);
+  color: var(--color-story-ink);
+  font-family: var(--font-story-body);
+}
+
+.recoveryState {
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+}
+
+.recoveryState > div {
+  width: min(100%, var(--layout-phone-max));
+}
+
+.recoveryCode,
+.stageNumber,
+.pageCounter,
+.gameRank,
+.closingMeta {
+  color: var(--color-story-muted);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.stageNumber,
+.pageCounter {
+  font-family: var(--font-story-mono);
+}
+
+.recoveryCode,
+.gameRank,
+.closingMeta {
+  font-family: var(--font-story-body);
+}
+
+.recoveryLink,
+.storyWordmark,
+.exitLink {
+  color: inherit;
+}
+
+.storyRoot {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  padding: var(--space-4);
+}
+
+.storyHeader,
+.progressRow,
+.storyControls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.storyWordmark {
+  font-family: var(--font-story-wordmark);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.progressRow {
+  margin-top: var(--space-6);
+}
+
+.progressTrack {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+
+.progressSegment {
+  height: var(--rule-focus);
+  background: var(--color-story-rule);
+}
+
+.progressSegment[data-state="complete"],
+.progressSegment[data-state="current"] {
+  background: var(--color-story-accent);
+}
+
+.storyViewport {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.storySlide {
+  display: grid;
+  align-content: center;
+  min-height: 100%;
+  padding-block: var(--space-10);
+}
+
+.slideHeading h1,
+.playerTitle,
+.gameTitle,
+.primaryMetric {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-story-display);
+}
+
+.slideHeading h1 {
+  max-width: 18ch;
+  margin: var(--space-3) 0 0;
+  font-size: clamp(2.25rem, 7vw, 5rem);
+  line-height: var(--leading-tight);
+}
+
+.identityLayout,
+.topGameLayout,
+.starSlideLayout {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.playerAvatar,
+.avatarFallback {
+  width: min(14rem, 56vw);
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+}
+
+.avatarBlock {
+  min-width: 0;
+}
+
+.avatarMessage {
+  max-width: min(14rem, 56vw);
+  margin: var(--space-3) 0 0;
+  color: var(--color-story-muted);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+.playerAvatar {
+  object-fit: cover;
+}
+
+.avatarFallback {
+  display: grid;
+  place-items: center;
+  background: var(--color-story-surface-raised);
+  color: var(--color-story-ink);
+  font-family: var(--font-story-display);
+  font-size: 4rem;
+}
+
+.slideLead,
+.metricCaption,
+.titleExplanation,
+.closingStatement {
+  max-width: 65ch;
+  font-size: var(--text-lg);
+  line-height: var(--leading-copy);
+}
+
+.slideNote,
+.controlHint,
+.posterNotice {
+  color: var(--color-story-muted);
+}
+
+.primaryMetric {
+  margin: var(--space-8) 0 0;
+  color: var(--color-story-ink);
+  font-size: clamp(4rem, 18vw, 8rem);
+  font-weight: 700;
+  line-height: 0.85;
+}
+
+.primaryMetric span {
+  margin-left: var(--space-2);
+  color: var(--color-story-muted);
+  font-size: var(--text-base);
+}
+
+.inventoryStats,
+.topGameList,
+.dustList {
+  margin: var(--space-8) 0 0;
+}
+
+.inventoryStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.inventoryStats dd {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-story-display);
+  font-size: var(--text-xl);
+}
+
+.topGameList,
+.dustList {
+  padding: 0;
+  list-style: none;
+}
+
+.topGameList li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  padding-block: var(--space-3);
+  border-bottom: var(--rule-hair) solid var(--color-story-rule);
+}
+
+.mainStar {
+  width: 3rem;
+  aspect-ratio: 1;
+  border-radius: var(--radius-pill);
+  background: var(--color-story-accent);
+}
+
+.gameTitle,
+.playerTitle {
+  margin: var(--space-4) 0 0;
+  color: var(--color-story-ink);
+  font-size: var(--text-xl);
+  font-weight: 700;
+}
+
+.gameMeasure {
+  color: var(--color-story-muted);
+}
+
+.gameSignalLine {
+  margin: var(--space-2) 0 0;
+  color: var(--color-story-accent);
+  font-size: var(--text-sm);
+  line-height: var(--leading-copy);
+}
+
+.gameplayGenre {
+  max-width: 12ch;
+  margin: var(--space-10) 0 0;
+  overflow-wrap: anywhere;
+  color: var(--color-story-accent);
+  font-family: var(--font-story-display);
+  font-size: clamp(3rem, 16vw, 6rem);
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+  line-height: 0.85;
+}
+
+.closingMeta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-6);
+  border-top: var(--rule-hair) solid var(--color-story-rule);
+}
+
+.closingMeta span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.storyControls {
+  padding-top: var(--space-4);
+}
+
+.backButton,
+.nextButton {
+  min-height: var(--control-min);
+  padding-inline: var(--space-5);
+  border: var(--rule-hair) solid var(--color-story-rule-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-story-ink);
+  font: inherit;
+}
+
+.nextButton {
+  border-color: var(--color-story-accent);
+  background: transparent;
+  color: var(--color-story-ink);
+}
+
+.backButton:disabled {
+  opacity: 0.4;
+}
+
+.backButton:focus-visible,
+.nextButton:focus-visible,
+.recoveryLink:focus-visible,
+.storyWordmark:focus-visible,
+.exitLink:focus-visible {
+  outline: var(--rule-focus) solid var(--color-story-focus);
+  outline-offset: var(--rule-focus-offset);
+}
+
+.recoveryState {
+  min-height: 100svh;
+  padding-block-start: max(var(--space-6), env(safe-area-inset-top));
+  padding-inline-end: max(var(--space-6), env(safe-area-inset-right));
+  padding-block-end: max(var(--space-6), env(safe-area-inset-bottom));
+  padding-inline-start: max(var(--space-6), env(safe-area-inset-left));
+}
+
+.recoveryState h1 {
+  min-width: 0;
+  max-width: 15ch;
+  margin: var(--space-3) 0 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-story-display);
+  font-size: var(--text-story-display);
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.recoveryState p:not(.recoveryCode) {
+  max-width: 55ch;
+  margin: var(--space-6) 0 0;
+  color: var(--color-story-muted);
+  font-size: var(--text-base);
+  line-height: var(--leading-copy);
+}
+
+.recoveryLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-min);
+  margin-top: var(--space-6);
+  border-bottom: var(--rule-hair) solid var(--color-story-accent);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.storyRoot {
+  width: min(100%, var(--layout-phone-max));
+  height: 100dvh;
+  min-height: 100svh;
+  overflow: hidden;
+  margin-inline: auto;
+  padding-block-start: max(var(--space-4), env(safe-area-inset-top));
+  padding-inline-end: max(var(--space-4), env(safe-area-inset-right));
+  padding-block-end: max(var(--space-4), env(safe-area-inset-bottom));
+  padding-inline-start: max(var(--space-4), env(safe-area-inset-left));
+  background-color: var(--color-story-paper);
+  color: var(--color-story-ink);
+}
+
+.storyRoot > * {
+  width: 100%;
+}
+
+.storyHeader {
+  min-height: var(--control-min);
+}
+
+.storyWordmark,
+.exitLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-min);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.storyWordmark {
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-label);
+}
+
+.exitLink {
+  color: var(--color-story-muted);
+  font-size: var(--text-sm);
+  text-decoration: underline;
+  text-decoration-color: var(--color-story-rule-strong);
+  text-underline-offset: var(--rule-focus);
+}
+
+.progressRow {
+  min-width: 0;
+  margin-top: var(--space-3);
+}
+
+.progressTrack {
+  min-width: 0;
+}
+
+.progressSegment[data-state="complete"] {
+  background: var(--color-story-muted);
+  opacity: 0.62;
+}
+
+.progressSegment[data-state="current"] {
+  background: var(--color-story-accent);
+  opacity: 1;
+}
+
+.pageCounter {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.storyViewport {
+  width: 100%;
+  min-width: 0;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+
+.storySlide {
+  width: 100%;
+  min-width: 0;
+  margin-inline: auto;
+  padding-block: var(--space-6);
+  animation: story-fade var(--dur-short) var(--ease-out) both;
+}
+
+.slideHeading,
+.identityLayout > div,
+.starSlideLayout > div {
+  min-width: 0;
+}
+
+.slideHeading h1 {
+  max-width: 16ch;
+  font-size: var(--text-story-display);
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.stageNumber {
+  display: block;
+  color: var(--color-story-accent);
+}
+
+.identityLayout {
+  align-items: center;
+}
+
+.playerAvatar,
+.avatarFallback {
+  width: min(10rem, 48vw, 24dvh);
+  border: var(--rule-hair) solid var(--color-story-rule);
+  border-radius: var(--radius-sm);
+}
+
+.playerAvatar {
+  height: auto;
+}
+
+.slideLead,
+.metricCaption,
+.titleExplanation,
+.closingStatement {
+  margin: var(--space-6) 0 0;
+}
+
+.slideLead,
+.titleExplanation,
+.closingStatement {
+  color: var(--color-story-ink);
+}
+
+.metricCaption,
+.slideNote {
+  max-width: 65ch;
+}
+
+.slideNote {
+  margin: var(--space-4) 0 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-copy);
+}
+
+.primaryMetric {
+  margin-top: var(--space-10);
+  font-size: var(--text-story-metric);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-display);
+  line-height: 0.86;
+}
+
+.primaryMetric span {
+  display: inline-block;
+  font-family: var(--font-story-body);
+  font-weight: 400;
+  letter-spacing: normal;
+}
+
+.inventoryStats {
+  gap: var(--space-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.inventoryStats > div {
+  min-width: 0;
+  padding-block: var(--space-4);
+  border-top: var(--rule-hair) solid var(--color-story-rule);
+}
+
+.inventoryStats dt {
+  color: var(--color-story-muted);
+  font-size: var(--text-sm);
+}
+
+.inventoryStats dd {
+  overflow-wrap: anywhere;
+  font-size: clamp(1.5rem, 7vw, 2.75rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.topGameLayout {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  margin-top: var(--space-10);
+}
+
+.mainStar {
+  width: clamp(2.5rem, 10vw, 4rem);
+}
+
+.gameTitle {
+  margin: 0;
+  font-size: clamp(1.75rem, 8vw, 2.75rem);
+  line-height: 1.05;
+}
+
+.gameMeasure {
+  margin: var(--space-3) 0 0;
+  font-variant-numeric: tabular-nums;
+  line-height: var(--leading-copy);
+}
+
+.topGameList {
+  counter-reset: top-game;
+}
+
+.topGameList li {
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--space-3);
+  row-gap: var(--space-1);
+}
+
+.topGameList li > strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.topGameList li > span:last-child {
+  grid-column: 2;
+  color: var(--color-story-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.topGameList .gameSignalLine {
+  grid-column: 2;
+  margin-top: 0;
+}
+
+.gameProfile {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: var(--space-6) 0 0;
+}
+
+.gameProfile > div {
+  min-width: 0;
+  padding-block: var(--space-3);
+  border-top: var(--rule-hair) solid var(--color-story-rule);
+}
+
+.gameProfile dt {
+  color: var(--color-story-muted);
+  font-size: var(--text-sm);
+}
+
+.gameProfile dd {
+  margin: var(--space-2) 0 0;
+  overflow-wrap: anywhere;
+  color: var(--color-story-ink);
+  font-family: var(--font-story-display);
+  font-size: var(--text-lg);
+  line-height: 1;
+}
+
+.starSlideLayout {
+  align-items: center;
+}
+
+.starMapFigure {
+  min-width: 0;
+  margin: 0;
+}
+
+.starMapStage {
+  position: relative;
+  isolation: isolate;
+}
+
+.starMapCanvas {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-height: clamp(16rem, 58dvh, 23rem);
+  aspect-ratio: 25 / 16;
+  overflow: clip;
+  border-block: var(--rule-hair) solid var(--color-story-rule);
+  background: var(--surface-story-space);
+  box-shadow: var(--shadow-story-orbit);
+}
+
+.starMapCanvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: grab;
+}
+
+.starMapCanvas canvas:active {
+  cursor: grabbing;
+}
+
+.starMapCanvas:focus-within {
+  outline: var(--rule-focus) solid var(--color-story-focus);
+  outline-offset: var(--rule-focus-offset);
+}
+
+.starMapFallback {
+  display: grid;
+  place-items: center;
+  min-height: inherit;
+  margin: 0;
+  padding: var(--space-6);
+  color: var(--color-story-muted);
+  line-height: var(--leading-copy);
+  text-align: center;
+}
+
+.starMapTelemetry {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  position: absolute;
+  z-index: 1;
+  inset-inline: var(--space-3);
+  bottom: var(--space-3);
+  margin: 0;
+  padding: var(--space-3);
+  overflow: hidden;
+  border: var(--rule-hair) solid var(--color-story-rule);
+  background: var(--color-story-surface);
+  box-shadow: var(--shadow-story-orbit);
+  animation: telemetry-enter var(--dur-short) var(--ease-out) both;
+}
+
+.starMapTelemetryHead,
+.starMapTelemetryMetrics,
+.starMapTelemetryMetrics > div {
+  display: flex;
+  min-width: 0;
+}
+
+.starMapTelemetryHead {
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  color: var(--color-story-faint);
+  font-family: var(--font-story-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.starMapTelemetryHead p,
+.starMapTelemetryHead span,
+.starMapTelemetry h3,
+.starMapTelemetry > p,
+.starMapTelemetryMetrics {
+  margin: 0;
+}
+
+.starMapTelemetryHead span {
+  flex: 0 0 auto;
+  color: var(--color-story-accent);
+}
+
+.starMapTelemetry h3 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--color-story-ink);
+  font-family: var(--font-story-display);
+  font-size: var(--text-xl);
+  letter-spacing: var(--tracking-display);
+  line-height: 1;
+}
+
+.starMapTelemetry > p {
+  color: var(--color-story-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-copy);
+}
+
+.starMapTelemetryMetrics {
+  flex-wrap: nowrap;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: var(--rule-hair) solid var(--color-story-rule);
+}
+
+.starMapTelemetryMetrics > div {
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.starMapTelemetryMetrics dt {
+  color: var(--color-story-faint);
+  font-family: var(--font-story-mono);
+  font-size: var(--text-xs);
+}
+
+.starMapTelemetryMetrics dd {
+  margin: 0;
+  color: var(--color-story-ink);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.starMapDetail,
+.starMapAggregation,
+.starMapMessage {
+  margin: var(--space-4) 0 0;
+  color: var(--color-story-muted);
+  line-height: var(--leading-copy);
+}
+
+.starMapAggregation {
+  font-size: var(--text-sm);
+}
+
+.starMapHint {
+  margin: var(--space-2) 0 0;
+  color: var(--color-story-faint);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+.starMapVolumeNote {
+  margin: var(--space-2) 0 0;
+  color: var(--color-story-muted);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+@keyframes telemetry-enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .starMapTelemetry {
+    animation: none;
+  }
+}
+
+.starMapMessage {
+  max-width: 42rem;
+}
+
+.dustList {
+  display: grid;
+  gap: var(--space-2);
+  max-width: 42rem;
+}
+
+.dustList li {
+  min-width: 0;
+  padding-block: var(--space-2);
+  overflow-wrap: anywhere;
+  border-bottom: var(--rule-hair) solid var(--color-story-rule);
+  color: var(--color-story-muted);
+}
+
+.playerTitle {
+  max-width: 15ch;
+  margin-top: var(--space-6);
+  overflow-wrap: anywhere;
+  font-size: var(--text-story-title);
+  letter-spacing: var(--tracking-display);
+  line-height: 0.96;
+}
+
+.closingStatement {
+  min-width: 0;
+  max-width: 26ch;
+  overflow-wrap: anywhere;
+  font-family: var(--font-story-display);
+  font-size: var(--text-story-title);
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+  line-height: 1;
+  text-wrap: balance;
+}
+
+.closingMeta {
+  margin-top: var(--space-10);
+  font-variant-numeric: tabular-nums;
+}
+
+.posterNotice {
+  min-height: 1.5em;
+  margin: var(--space-4) 0 0;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.posterNotice[data-state="error"] {
+  color: var(--color-story-danger);
+}
+
+.posterResult {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+}
+
+.posterPreview {
+  width: min(100%, 22rem);
+  aspect-ratio: 3 / 4;
+  border: var(--rule-hair) solid var(--color-story-rule-strong);
+  background: var(--color-story-surface);
+  object-fit: cover;
+}
+
+.posterActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.posterDownload,
+.posterShare {
+  min-height: var(--control-min);
+  padding-inline: var(--space-5);
+  border: var(--rule-hair) solid var(--color-story-rule-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-story-ink);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.posterDownload {
+  border-color: var(--color-story-accent);
+}
+
+.posterDownload:focus-visible,
+.posterShare:focus-visible {
+  outline: var(--rule-focus) solid var(--color-story-focus);
+  outline-offset: var(--rule-focus-offset);
+}
+
+.storyControls {
+  min-width: 0;
+  padding-top: var(--space-3);
+}
+
+.controlHint {
+  display: none;
+  margin: 0;
+  font-size: var(--text-xs);
+}
+
+.backButton,
+.nextButton {
+  min-width: 4.75rem;
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-short) var(--ease-out),
+    color var(--dur-short) var(--ease-out),
+    opacity var(--dur-micro) var(--ease-out),
+    transform var(--dur-micro) var(--ease-out);
+}
+
+.recoveryLink,
+.storyWordmark,
+.exitLink {
+  transition: opacity var(--dur-micro) var(--ease-out);
+}
+
+.recoveryLink:active,
+.storyWordmark:active,
+.exitLink:active {
+  opacity: 0.55;
+}
+
+.recoveryLink[aria-disabled="true"],
+.storyWordmark[aria-disabled="true"],
+.exitLink[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.backButton:active:not(:disabled),
+.nextButton:active:not(:disabled) {
+  transform: translateY(1px);
+  transition-timing-function: var(--ease-in);
+}
+
+.backButton:disabled,
+.nextButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.backButton[data-state="loading"],
+.nextButton[data-state="loading"] {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.backButton[data-state="loading"]::after,
+.nextButton[data-state="loading"]::after {
+  content: " …";
+}
+
+.backButton[data-state="error"],
+.nextButton[data-state="error"] {
+  border-color: var(--color-story-danger);
+  color: var(--color-story-danger);
+}
+
+.backButton[data-state="error"]::after,
+.nextButton[data-state="error"]::after {
+  content: " !";
+}
+
+.backButton[data-state="success"],
+.nextButton[data-state="success"] {
+  border-color: var(--color-story-success);
+  color: var(--color-story-ink);
+}
+
+.backButton[data-state="success"]::after,
+.nextButton[data-state="success"]::after {
+  content: " ✓";
+}
+
+@keyframes story-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .backButton:hover:not(:disabled),
+  .nextButton:hover:not(:disabled),
+  .posterDownload:hover,
+  .posterShare:hover {
+    background-color: var(--color-story-surface-raised);
+    color: var(--color-story-ink);
+    transform: translateY(-1px);
+  }
+
+  .recoveryLink:hover,
+  .storyWordmark:hover,
+  .exitLink:hover {
+    opacity: 0.72;
+  }
+}
+
+@media (pointer: coarse) {
+  .recoveryLink,
+  .storyWordmark,
+  .exitLink,
+  .backButton,
+  .nextButton,
+  .posterDownload,
+  .posterShare {
+    min-height: 3rem;
+  }
+}
+
+@media (min-width: 40rem) {
+  .recoveryState {
+    padding-block-start: max(var(--space-10), env(safe-area-inset-top));
+    padding-inline-end: max(var(--space-10), env(safe-area-inset-right));
+    padding-block-end: max(var(--space-10), env(safe-area-inset-bottom));
+    padding-inline-start: max(var(--space-10), env(safe-area-inset-left));
+  }
+
+  .storyRoot {
+    padding-block-start: max(var(--space-6), env(safe-area-inset-top));
+    padding-inline-end: max(var(--space-6), env(safe-area-inset-right));
+    padding-block-end: max(var(--space-6), env(safe-area-inset-bottom));
+    padding-inline-start: max(var(--space-6), env(safe-area-inset-left));
+  }
+
+  .progressRow {
+    margin-top: var(--space-5);
+  }
+
+  .storySlide {
+    padding-block: var(--space-10);
+  }
+
+  .controlHint {
+    display: block;
+  }
+
+  .topGameList li {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .topGameList li > span:last-child {
+    grid-column: auto;
+    white-space: nowrap;
+  }
+
+  .topGameList .gameSignalLine {
+    grid-column: 2 / -1;
+  }
+}
+
+@media (min-width: 60rem) {
+  .storyRoot {
+    padding-block-start: max(var(--space-8), env(safe-area-inset-top));
+    padding-inline-end: max(var(--space-8), env(safe-area-inset-right));
+    padding-block-end: max(var(--space-8), env(safe-area-inset-bottom));
+    padding-inline-start: max(var(--space-8), env(safe-area-inset-left));
+  }
+
+  .storySlide {
+    padding-block: var(--space-12);
+  }
+}
+
+@media (min-width: 90rem) {
+  .storyRoot {
+    padding-inline-end: max(var(--space-12), env(safe-area-inset-right));
+    padding-inline-start: max(var(--space-12), env(safe-area-inset-left));
+  }
+}
+
+@media (max-height: 42rem) {
+  .progressRow {
+    margin-top: var(--space-1);
+  }
+
+  .storySlide {
+    padding-block: var(--space-4);
+  }
+
+  .storyControls {
+    padding-top: var(--space-1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .storySlide {
+    animation-duration: var(--dur-micro);
+  }
+
+  .backButton,
+  .nextButton,
+  .recoveryLink,
+  .storyWordmark,
+  .exitLink {
+    transition-duration: var(--dur-micro);
+  }
+
+  .backButton:hover:not(:disabled),
+  .nextButton:hover:not(:disabled),
+  .backButton:active:not(:disabled),
+  .nextButton:active:not(:disabled) {
+    transform: none;
+  }
+}

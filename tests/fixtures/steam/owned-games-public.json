@@ -1,0 +1,28 @@
+{
+  "response": {
+    "game_count": 3,
+    "games": [
+      {
+        "appid": 41003,
+        "name": "Dust Library",
+        "playtime_forever": 87,
+        "img_icon_url": "fixture-icon-dust",
+        "rtime_last_played": 1711929600
+      },
+      {
+        "appid": 41001,
+        "name": "Archive Signal",
+        "playtime_forever": 9420,
+        "img_icon_url": "fixture-icon-signal",
+        "rtime_last_played": 1764547200
+      },
+      {
+        "appid": 41002,
+        "name": "Quiet Orbit",
+        "playtime_forever": 1250,
+        "img_icon_url": "",
+        "rtime_last_played": 0
+      }
+    ]
+  }
+}

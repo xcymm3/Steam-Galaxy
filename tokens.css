@@ -1,0 +1,111 @@
+/* Hallmark · macrostructure: Long Document · genre: atmospheric · theme: Aurora · tone: deep-night playful · anchor hue: amber · nav: N5 · footer: Ft2 · portrait-first all-viewports · pre-emit critique: P5 H5 E5 S5 R5 V5 */
+:root {
+  color-scheme: dark;
+
+  --color-paper: oklch(15% 0.018 268);
+  --color-paper-deep: oklch(11% 0.014 268);
+  --color-paper-raised: oklch(20% 0.021 268);
+  --color-ink: oklch(93% 0.012 86);
+  --color-ink-muted: oklch(71% 0.018 260);
+  --color-ink-faint: oklch(55% 0.018 260);
+  --color-rule: oklch(36% 0.025 266);
+  --color-rule-strong: oklch(48% 0.045 263);
+  --color-accent: oklch(79% 0.15 72);
+  --color-accent-ink: oklch(19% 0.035 67);
+  --color-accent-soft: oklch(79% 0.15 72 / 0.12);
+  --color-star-field: oklch(91% 0.018 86 / 0.13);
+  --color-success: oklch(75% 0.12 148);
+  --color-danger: oklch(70% 0.16 28);
+  --color-focus: var(--color-accent);
+
+  --color-story-paper: oklch(12% 0.02 252);
+  --color-story-surface: oklch(17% 0.022 252);
+  --color-story-surface-raised: oklch(21% 0.024 252);
+  --color-story-ink: oklch(94% 0.01 86);
+  --color-story-muted: oklch(73% 0.014 252);
+  --color-story-faint: oklch(57% 0.015 252);
+  --color-story-rule: oklch(48% 0.025 252);
+  --color-story-rule-strong: oklch(58% 0.04 252);
+  --color-story-accent: oklch(79% 0.15 72);
+  --color-story-accent-ink: oklch(19% 0.035 67);
+  --color-story-success: oklch(75% 0.12 148);
+  --color-story-danger: oklch(70% 0.16 28);
+  --color-story-focus: var(--color-story-accent);
+  --color-story-ocean: oklch(57% 0.13 235);
+  --color-story-continent: oklch(66% 0.12 152);
+  --color-story-rust: oklch(61% 0.13 46);
+  --color-story-ice: oklch(78% 0.05 220);
+  --color-story-gas: oklch(67% 0.11 82);
+  --color-story-nebula: oklch(53% 0.12 307);
+
+  --font-display: var(--font-bricolage), "Microsoft YaHei", sans-serif;
+  --font-body: var(--font-geist), "Microsoft YaHei", sans-serif;
+  --font-mono: var(--font-geist-mono), "Cascadia Mono", monospace;
+  --font-story-display: var(--font-geist), "Microsoft YaHei", sans-serif;
+  --font-story-body: var(--font-geist), "Microsoft YaHei", sans-serif;
+  --font-story-wordmark: var(--font-bricolage), "Microsoft YaHei", sans-serif;
+  --font-story-mono: var(--font-geist-mono), "Cascadia Mono", monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: clamp(1.0625rem, 0.98rem + 0.35vw, 1.125rem);
+  --text-xl: clamp(1.25rem, 1.08rem + 0.72vw, 1.5rem);
+  --text-hero: clamp(2.75rem, 1.75rem + 4.35vw, 4.25rem);
+  --text-story-display: clamp(2.25rem, 11vw, 3.5rem);
+  --text-story-metric: clamp(4rem, 18vw, 5.75rem);
+  --text-story-title: clamp(2.5rem, 12vw, 4rem);
+
+  --leading-tight: 0.94;
+  --leading-copy: 1.7;
+  --tracking-display: -0.045em;
+  --tracking-label: 0.11em;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-layout-gap: clamp(var(--space-10), 6vw, var(--space-20));
+  --space-panel: clamp(var(--space-6), 4vw, var(--space-10));
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.875rem;
+  --radius-pill: 999px;
+  --rule-hair: 0.0625rem;
+  --rule-focus: 0.125rem;
+  --rule-focus-offset: 0.1875rem;
+
+  --layout-gutter: clamp(1rem, 3vw, 2.5rem);
+  --layout-phone-gutter: clamp(1rem, 4vw, 1.5rem);
+  --layout-phone-max: 27rem;
+  --layout-max: 74rem;
+  --layout-story-max: 90rem;
+  --layout-story-content: 74rem;
+  --control-min: 2.75rem;
+
+  --shadow-raised: 0 1.25rem 4rem oklch(5% 0.02 268 / 0.34);
+  --shadow-story-orbit: 0 1.5rem 3.5rem oklch(5% 0.02 252 / 0.46);
+  --surface-story-space: radial-gradient(
+    circle at 50% 48%,
+    var(--color-story-surface-raised),
+    var(--color-story-surface) 44%,
+    var(--color-story-paper) 78%
+  );
+  --duration-fast: 140ms;
+  --duration-enter: 420ms;
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --z-nav: 20;
+}

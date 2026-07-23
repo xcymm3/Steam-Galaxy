@@ -1,0 +1,15 @@
+{
+  "response": {
+    "players": [
+      {
+        "steamid": "76561198000000001",
+        "communityvisibilitystate": 3,
+        "personaname": "夜航员_01",
+        "profileurl": "https://steamcommunity.com/profiles/76561198000000001/",
+        "avatarfull": "https://avatars.example.test/anonymous-player.jpg",
+        "lastlogoff": 1767225600,
+        "timecreated": 1262304000
+      }
+    ]
+  }
+}
