@@ -1,6 +1,9 @@
+import { getGalaxyPlanetRadius } from "./galaxy";
 import type { StarMapLayout, StarMapNode } from "./star-map";
 
 export const THREE_STAR_SYSTEM_LIMIT = 10;
+
+export { getGalaxyPlanetRadius as getPlanetRadiusForPlaytime } from "./galaxy";
 
 export const solarSystemRoles = [
   "太阳",
@@ -37,7 +40,6 @@ export interface ThreeStarSystem {
 }
 
 const fullTurn = Math.PI * 2;
-const planetRadiusScale = 0.5;
 
 function stableHash(value: string) {
   let hash = 2_166_136_261;
@@ -52,18 +54,6 @@ function stableHash(value: string) {
 
 function normalizedHash(value: string) {
   return stableHash(value) / 4_294_967_295;
-}
-
-/**
- * A sphere's volume is 4/3πr³. Making r proportional to ∛hours means that
- * every positive-playtime planet has volume strictly proportional to playtime.
- */
-export function getPlanetRadiusForPlaytime(playtimeMinutes: number) {
-  if (playtimeMinutes <= 0) {
-    return 0;
-  }
-
-  return Math.cbrt(playtimeMinutes / 60) * planetRadiusScale;
 }
 
 function getOrbitRadius(index: number, radius: number) {
@@ -87,7 +77,7 @@ export function createThreeStarSystem(layout: StarMapLayout): ThreeStarSystem {
     const isCore = index === 0;
     const seed = normalizedHash(node.id);
     const phase = seed * fullTurn;
-    const radius = getPlanetRadiusForPlaytime(node.playtimeMinutes);
+    const radius = getGalaxyPlanetRadius(node.playtimeMinutes);
     const solarSystemRole = solarSystemRoles[index];
 
     if (!solarSystemRole) {
