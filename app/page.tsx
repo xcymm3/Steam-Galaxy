@@ -22,13 +22,9 @@ export default async function Home({ searchParams }: HomePageProps) {
     <div className="landingPage">
       <header className="siteHeader">
         <nav className="siteNav" aria-label="主导航">
-          <a className="brand" href="#top" aria-label="WHERE DID THE HOURS GO?">
-            <span className="brandLong">WHERE DID THE HOURS GO?</span>
-            <span className="brandShort" aria-hidden="true">
-              HOURS?
-            </span>
+          <a className="brand" href="#top" aria-label="Steam Galaxy">
+            STEAM GALAXY
           </a>
-          <span className="phaseTag">GALAXY</span>
         </nav>
       </header>
 

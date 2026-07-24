@@ -19,7 +19,7 @@ const monoFont = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WHERE DID THE HOURS GO?",
+  title: "Steam Galaxy",
   description: "把公开的 Steam 游戏库变成可探索的互动游戏星系。",
 };
 

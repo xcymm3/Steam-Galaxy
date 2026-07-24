@@ -120,7 +120,7 @@ export function GalaxyWorkbench({ report }: GalaxyWorkbenchProps) {
     <main className={styles.workbenchRoot}>
       <header className={styles.workbenchHeader}>
         <Link className={styles.wordmark} href="/" aria-label="返回首页">
-          HOURS?
+          STEAM GALAXY
         </Link>
         <div className={styles.playerIdentity}>
           <strong>{player.displayName}</strong>
