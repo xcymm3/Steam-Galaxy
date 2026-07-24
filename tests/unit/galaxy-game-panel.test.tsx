@@ -63,20 +63,34 @@ describe("GalaxyGamePanel", () => {
     expect(onReset).toHaveBeenCalledOnce();
   });
 
-  it("explains when a selected game has no cached store signals yet", () => {
+  it("retries unavailable Store metadata and replaces a failed cover with an archive fallback", () => {
+    const onLoadMetadata = vi.fn();
+
     render(
-      <GalaxyGamePanel body={body} metadata={undefined} onReset={vi.fn()} />,
+      <GalaxyGamePanel
+        body={body}
+        metadata={undefined}
+        metadataStatus="unavailable"
+        onLoadMetadata={onLoadMetadata}
+        onReset={vi.fn()}
+      />,
     );
 
-    expect(screen.getByText(/暂无已缓存的 Steam 商店标签/)).toBeTruthy();
-    expect(
-      (
-        screen.getByRole("img", {
-          name: "Archive Runner 的 Steam 封面",
-        }) as HTMLImageElement
-      ).src,
-    ).toBe(
+    expect(screen.getByText(/Steam 商店暂时没有返回可用详情/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "重试读取" }));
+    expect(onLoadMetadata).toHaveBeenCalledOnce();
+
+    const cover = screen.getByRole("img", {
+      name: "Archive Runner 的 Steam 封面",
+    }) as HTMLImageElement;
+    expect(cover.src).toBe(
       "https://cdn.cloudflare.steamstatic.com/steam/apps/424242/header.jpg",
     );
+    fireEvent.error(cover);
+    expect(
+      screen.getByRole("img", {
+        name: "Archive Runner 的 Steam 封面不可用",
+      }),
+    ).toBeTruthy();
   });
 });

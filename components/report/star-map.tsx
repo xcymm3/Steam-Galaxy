@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ACESFilmicToneMapping,
   AdditiveBlending,
@@ -37,6 +37,7 @@ import {
   getGalaxyFocusDistance,
   type GalaxySceneBody,
 } from "@/lib/report/galaxy-scene";
+import { fetchSteamStoreMetadata } from "@/lib/steam/store-metadata-api";
 import type { SteamStoreGameMetadata } from "@/lib/steam/store-metadata";
 
 import styles from "./story-player.module.css";
@@ -49,6 +50,8 @@ interface StarMapProps {
 export interface GalaxyGamePanelProps {
   body: GalaxySceneBody;
   metadata: SteamStoreGameMetadata | undefined;
+  metadataStatus?: "idle" | "loading" | "ready" | "unavailable";
+  onLoadMetadata?: () => void;
   onReset: () => void;
 }
 
@@ -355,10 +358,20 @@ function formatPhysicalRadius(node: GalaxyGameNode) {
 export function GalaxyGamePanel({
   body,
   metadata,
+  metadataStatus = metadata ? "ready" : "idle",
+  onLoadMetadata,
   onReset,
 }: GalaxyGamePanelProps) {
   const { node } = body;
-  const coverImageUrl = metadata?.headerImageUrl ?? node.coverImageUrl;
+  const [failedCoverImageUrls, setFailedCoverImageUrls] = useState<string[]>(
+    [],
+  );
+  const coverImageUrls = [
+    ...new Set([metadata?.headerImageUrl, node.coverImageUrl]),
+  ].filter((url): url is string => Boolean(url));
+  const coverImageUrl = coverImageUrls.find(
+    (url) => !failedCoverImageUrls.includes(url),
+  );
   const metadataSignals = [
     {
       label: "类型",
@@ -387,9 +400,32 @@ export function GalaxyGamePanel({
       </div>
       <div className={styles.starMapTelemetryOverview}>
         <div className={styles.starMapCoverFrame}>
-          {/* The URL is runtime Steam data, so it intentionally bypasses a static image allowlist. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={coverImageUrl} alt={`${node.game.name} 的 Steam 封面`} />
+          {coverImageUrl ? (
+            <>
+              {/* The URL is runtime Steam data, so it intentionally bypasses a static image allowlist. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={coverImageUrl}
+                alt={`${node.game.name} 的 Steam 封面`}
+                onError={() => {
+                  setFailedCoverImageUrls((failedUrls) =>
+                    failedUrls.includes(coverImageUrl)
+                      ? failedUrls
+                      : [...failedUrls, coverImageUrl],
+                  );
+                }}
+              />
+            </>
+          ) : (
+            <div
+              className={styles.starMapCoverFallback}
+              role="img"
+              aria-label={`${node.game.name} 的 Steam 封面不可用`}
+            >
+              <span>STEAM / ARCHIVE</span>
+              <strong>APP {node.appId}</strong>
+            </div>
+          )}
         </div>
         <div className={styles.starMapTelemetryPrimary}>
           <h3>{node.game.name}</h3>
@@ -423,9 +459,26 @@ export function GalaxyGamePanel({
           ))}
         </dl>
       ) : (
-        <p className={styles.starMapMetadataPending}>
-          暂无已缓存的 Steam 商店标签；第七步会在打开档案时按需补齐。
-        </p>
+        <div className={styles.starMapMetadataPending}>
+          {metadataStatus === "loading" || metadataStatus === "idle" ? (
+            <p>正在从 Steam 商店补全类型与玩法信息…</p>
+          ) : metadataStatus === "unavailable" ? (
+            <>
+              <p>Steam 商店暂时没有返回可用详情。</p>
+              {onLoadMetadata && (
+                <button
+                  className={styles.starMapMetadataRetry}
+                  type="button"
+                  onClick={onLoadMetadata}
+                >
+                  重试读取
+                </button>
+              )}
+            </>
+          ) : (
+            <p>Steam 商店没有提供可用的类型或玩法标签。</p>
+          )}
+        </div>
       )}
       {metadata?.shortDescription && (
         <p className={styles.starMapDescription}>{metadata.shortDescription}</p>
@@ -455,8 +508,15 @@ export function GalaxyGamePanel({
 export function StarMap({ galaxy, gameMetadataByAppId }: StarMapProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const focusControllerRef = useRef<(nodeId: string | null) => void>(() => {});
+  const metadataByAppIdRef = useRef(gameMetadataByAppId);
+  const requestedAppIdsRef = useRef(new Set(Object.keys(gameMetadataByAppId)));
   const galaxyScene = useMemo(() => createGalaxyScene(galaxy), [galaxy]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [loadedMetadataByAppId, setLoadedMetadataByAppId] =
+    useState(gameMetadataByAppId);
+  const [metadataStatusByAppId, setMetadataStatusByAppId] = useState<
+    Record<string, "loading" | "ready" | "unavailable">
+  >({});
   const [renderUnavailable, setRenderUnavailable] = useState(false);
   const selectedBody =
     galaxyScene.bodies.find((body) => body.node.id === selectedId) ?? null;
@@ -465,6 +525,44 @@ export function StarMap({ galaxy, gameMetadataByAppId }: StarMapProps) {
     focusControllerRef.current(null);
     setSelectedId(null);
   };
+
+  const requestMetadata = useCallback((appId: number, force = false) => {
+    const key = String(appId);
+
+    if (metadataByAppIdRef.current[key]) {
+      return;
+    }
+
+    if (!force && requestedAppIdsRef.current.has(key)) {
+      return;
+    }
+
+    requestedAppIdsRef.current.add(key);
+    setMetadataStatusByAppId((current) => ({
+      ...current,
+      [key]: "loading",
+    }));
+
+    void fetchSteamStoreMetadata(appId).then((metadata) => {
+      if (metadata) {
+        metadataByAppIdRef.current = {
+          ...metadataByAppIdRef.current,
+          [key]: metadata,
+        };
+        setLoadedMetadataByAppId(metadataByAppIdRef.current);
+        setMetadataStatusByAppId((current) => ({
+          ...current,
+          [key]: "ready",
+        }));
+        return;
+      }
+
+      setMetadataStatusByAppId((current) => ({
+        ...current,
+        [key]: "unavailable",
+      }));
+    });
+  }, []);
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -583,6 +681,7 @@ export function StarMap({ galaxy, gameMetadataByAppId }: StarMapProps) {
         applyFocus(body);
       }
 
+      requestMetadata(node.appId);
       setSelectedId(node.id);
     };
 
@@ -890,7 +989,7 @@ export function StarMap({ galaxy, gameMetadataByAppId }: StarMapProps) {
       renderer.dispose();
       mount.replaceChildren();
     };
-  }, [galaxyScene]);
+  }, [galaxyScene, requestMetadata]);
 
   if (galaxy.games.length === 0) {
     return (
@@ -920,8 +1019,18 @@ export function StarMap({ galaxy, gameMetadataByAppId }: StarMapProps) {
         </div>
         {selectedNode && (
           <GalaxyGamePanel
+            key={selectedNode.id}
             body={selectedBody!}
-            metadata={gameMetadataByAppId[String(selectedNode.appId)]}
+            metadata={loadedMetadataByAppId[String(selectedNode.appId)]}
+            metadataStatus={
+              metadataStatusByAppId[String(selectedNode.appId)] ??
+              (loadedMetadataByAppId[String(selectedNode.appId)]
+                ? "ready"
+                : "idle")
+            }
+            onLoadMetadata={() => {
+              requestMetadata(selectedNode.appId, true);
+            }}
             onReset={resetOverview}
           />
         )}

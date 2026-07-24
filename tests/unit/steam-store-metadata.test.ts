@@ -116,4 +116,31 @@ describe("Steam Store metadata client", () => {
 
     await expect(client.getGameMetadata(games)).resolves.toEqual([]);
   });
+
+  it("reuses its AppID cache for repeated on-demand lookups", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          730: {
+            success: true,
+            data: {
+              type: "game",
+              genres: [{ description: "动作" }],
+              categories: [{ description: "多人" }],
+            },
+          },
+        }),
+        { headers: { "Content-Type": "application/json" }, status: 200 },
+      ),
+    );
+    const client = new SteamStoreMetadataClient({
+      cache: new Map(),
+      fetchImpl: fetchMock,
+    });
+
+    await expect(client.getGameMetadata([games[0]!])).resolves.toHaveLength(1);
+    await expect(client.getGameMetadata([games[0]!])).resolves.toHaveLength(1);
+
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
 });

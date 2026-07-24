@@ -719,11 +719,40 @@
   box-shadow: var(--shadow-story-orbit);
 }
 
-.starMapCoverFrame img {
+.starMapCoverFrame img,
+.starMapCoverFallback {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
+}
+
+.starMapCoverFrame img {
   object-fit: cover;
+}
+
+.starMapCoverFallback {
+  display: grid;
+  align-content: center;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  background:
+    linear-gradient(
+      135deg,
+      transparent 0 43%,
+      var(--color-story-rule) 44% 45%,
+      transparent 46% 100%
+    ),
+    var(--surface-story-space);
+  color: var(--color-story-muted);
+  font-family: var(--font-story-mono);
+  font-size: var(--text-xs);
+  line-height: 1.2;
+}
+
+.starMapCoverFallback strong {
+  color: var(--color-story-accent);
+  font-size: var(--text-sm);
+  font-weight: 700;
 }
 
 .starMapTelemetryPrimary {
@@ -810,6 +839,37 @@
   color: var(--color-story-muted);
   font-size: var(--text-xs);
   line-height: 1.45;
+}
+
+.starMapMetadataPending {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: var(--rule-hair) solid var(--color-story-rule);
+}
+
+.starMapMetadataPending p {
+  margin: 0;
+}
+
+.starMapMetadataRetry {
+  flex: 0 0 auto;
+  min-height: 2rem;
+  padding-inline: var(--space-2);
+  border: var(--rule-hair) solid var(--color-story-rule-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-story-ink);
+  font: inherit;
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.starMapMetadataRetry:focus-visible {
+  outline: var(--rule-focus) solid var(--color-story-focus);
+  outline-offset: var(--rule-focus-offset);
 }
 
 .starMapDescription {
