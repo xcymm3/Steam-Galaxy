@@ -37,11 +37,19 @@ import {
   getGalaxyFocusDistance,
   type GalaxySceneBody,
 } from "@/lib/report/galaxy-scene";
+import type { SteamStoreGameMetadata } from "@/lib/steam/store-metadata";
 
 import styles from "./story-player.module.css";
 
 interface StarMapProps {
   galaxy: GalaxyModel;
+  gameMetadataByAppId: Record<string, SteamStoreGameMetadata>;
+}
+
+export interface GalaxyGamePanelProps {
+  body: GalaxySceneBody;
+  metadata: SteamStoreGameMetadata | undefined;
+  onReset: () => void;
 }
 
 interface ThemeColors {
@@ -328,7 +336,123 @@ function selectedBodyKind(node: GalaxyGameNode) {
   return node.kind === "planet" ? "行星" : "档案信标";
 }
 
-export function StarMap({ galaxy }: StarMapProps) {
+function formatGameMode(mode: SteamStoreGameMetadata["modes"][number]) {
+  const labels = {
+    "single-player": "单人",
+    multiplayer: "多人",
+    "co-op": "合作",
+  };
+
+  return labels[mode];
+}
+
+function formatPhysicalRadius(node: GalaxyGameNode) {
+  return node.kind === "planet"
+    ? `${node.physicalRadius.toFixed(2)} u`
+    : "无实体";
+}
+
+export function GalaxyGamePanel({
+  body,
+  metadata,
+  onReset,
+}: GalaxyGamePanelProps) {
+  const { node } = body;
+  const coverImageUrl = metadata?.headerImageUrl ?? node.coverImageUrl;
+  const metadataSignals = [
+    {
+      label: "类型",
+      value: metadata?.genres.slice(0, 3).join(" / ") ?? "",
+    },
+    {
+      label: "模式",
+      value: metadata?.modes.map(formatGameMode).join(" / ") ?? "",
+    },
+    {
+      label: "开发商",
+      value: metadata?.developers[0] ?? "",
+    },
+  ].filter((signal) => signal.value);
+
+  return (
+    <section
+      id="star-map-selection"
+      className={styles.starMapTelemetry}
+      aria-label={`${node.game.name} 的游戏档案`}
+      aria-live="polite"
+    >
+      <div className={styles.starMapTelemetryHead}>
+        <p>游戏档案</p>
+        <span>#{node.rank}</span>
+      </div>
+      <div className={styles.starMapTelemetryOverview}>
+        <div className={styles.starMapCoverFrame}>
+          {/* The URL is runtime Steam data, so it intentionally bypasses a static image allowlist. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={coverImageUrl} alt={`${node.game.name} 的 Steam 封面`} />
+        </div>
+        <div className={styles.starMapTelemetryPrimary}>
+          <h3>{node.game.name}</h3>
+          <dl className={styles.starMapTelemetryMetrics}>
+            <div>
+              <dt>累计时长</dt>
+              <dd>{formatHours(node.game.playtimeMinutes)} 小时</dd>
+            </div>
+            <div>
+              <dt>星体类型</dt>
+              <dd>{selectedBodyKind(node)}</dd>
+            </div>
+            <div>
+              <dt>时长半径</dt>
+              <dd>{formatPhysicalRadius(node)}</dd>
+            </div>
+            <div>
+              <dt>App ID</dt>
+              <dd>{node.appId}</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+      {metadataSignals.length > 0 ? (
+        <dl className={styles.starMapMetadata}>
+          {metadataSignals.map((signal) => (
+            <div key={signal.label}>
+              <dt>{signal.label}</dt>
+              <dd>{signal.value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
+        <p className={styles.starMapMetadataPending}>
+          暂无已缓存的 Steam 商店标签；第七步会在打开档案时按需补齐。
+        </p>
+      )}
+      {metadata?.shortDescription && (
+        <p className={styles.starMapDescription}>{metadata.shortDescription}</p>
+      )}
+      <div className={styles.starMapTelemetryActions}>
+        <a
+          className={styles.starMapStoreLink}
+          href={`https://store.steampowered.com/app/${node.appId}/`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Steam 商店
+        </a>
+        <button
+          className={styles.starMapTelemetryReset}
+          type="button"
+          onClick={onReset}
+        >
+          返回全景
+        </button>
+      </div>
+      <p className={styles.starMapKeyboardHint}>按 Esc 或 0 也可返回全景</p>
+    </section>
+  );
+}
+
+export function StarMap({ galaxy, gameMetadataByAppId }: StarMapProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const focusControllerRef = useRef<(nodeId: string | null) => void>(() => {});
   const galaxyScene = useMemo(() => createGalaxyScene(galaxy), [galaxy]);
@@ -795,37 +919,11 @@ export function StarMap({ galaxy }: StarMapProps) {
           )}
         </div>
         {selectedNode && (
-          <section
-            id="star-map-selection"
-            className={styles.starMapTelemetry}
-            aria-live="polite"
-          >
-            <div className={styles.starMapTelemetryHead}>
-              <p>星体档案</p>
-              <span>#{selectedNode.rank}</span>
-            </div>
-            <h3>{selectedNode.game.name}</h3>
-            <dl className={styles.starMapTelemetryMetrics}>
-              <div>
-                <dt>累计时长</dt>
-                <dd>{formatHours(selectedNode.game.playtimeMinutes)} 小时</dd>
-              </div>
-              <div>
-                <dt>星体类型</dt>
-                <dd>{selectedBodyKind(selectedNode)}</dd>
-              </div>
-            </dl>
-            <div className={styles.starMapTelemetryActions}>
-              <button
-                className={styles.starMapTelemetryReset}
-                type="button"
-                onClick={resetOverview}
-              >
-                返回全景
-              </button>
-              <p>按 Esc 或 0 也可返回全景</p>
-            </div>
-          </section>
+          <GalaxyGamePanel
+            body={selectedBody!}
+            metadata={gameMetadataByAppId[String(selectedNode.appId)]}
+            onReset={resetOverview}
+          />
         )}
       </div>
       <p id="star-map-hint" className={styles.starMapHint}>

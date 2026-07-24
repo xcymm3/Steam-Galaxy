@@ -665,7 +665,8 @@
   bottom: var(--space-3);
   margin: 0;
   padding: var(--space-3);
-  overflow: hidden;
+  max-block-size: min(14rem, calc(100% - var(--space-6)));
+  overflow: auto;
   border: var(--rule-hair) solid var(--color-story-rule);
   background: var(--color-story-surface);
   box-shadow: var(--shadow-story-orbit);
@@ -673,8 +674,8 @@
 }
 
 .starMapTelemetryHead,
-.starMapTelemetryMetrics,
-.starMapTelemetryMetrics > div {
+.starMapTelemetryMetrics > div,
+.starMapMetadata > div {
   display: flex;
   min-width: 0;
 }
@@ -703,6 +704,34 @@
   color: var(--color-story-accent);
 }
 
+.starMapTelemetryOverview {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 0.78fr) minmax(0, 1fr);
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.starMapCoverFrame {
+  align-self: start;
+  overflow: hidden;
+  border: var(--rule-hair) solid var(--color-story-rule);
+  background: var(--surface-story-space);
+  box-shadow: var(--shadow-story-orbit);
+}
+
+.starMapCoverFrame img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.starMapTelemetryPrimary {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
 .starMapTelemetry h3 {
   min-width: 0;
   overflow-wrap: anywhere;
@@ -720,7 +749,8 @@
 }
 
 .starMapTelemetryMetrics {
-  flex-wrap: nowrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-2);
   padding-top: var(--space-2);
   border-top: var(--rule-hair) solid var(--color-story-rule);
@@ -745,22 +775,62 @@
   font-variant-numeric: tabular-nums;
 }
 
+.starMapMetadata {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding-top: var(--space-2);
+  border-top: var(--rule-hair) solid var(--color-story-rule);
+}
+
+.starMapMetadata > div {
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.starMapMetadata dt {
+  color: var(--color-story-faint);
+  font-family: var(--font-story-mono);
+  font-size: var(--text-xs);
+}
+
+.starMapMetadata dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--color-story-ink);
+  font-size: var(--text-xs);
+  line-height: 1.35;
+}
+
+.starMapMetadataPending,
+.starMapDescription,
+.starMapKeyboardHint {
+  margin: 0;
+  color: var(--color-story-muted);
+  font-size: var(--text-xs);
+  line-height: 1.45;
+}
+
+.starMapDescription {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--color-story-ink);
+}
+
 .starMapTelemetryActions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-3);
 }
 
-.starMapTelemetryActions p {
-  margin: 0;
-  color: var(--color-story-faint);
-  font-size: var(--text-xs);
-  line-height: 1.4;
-}
-
+.starMapStoreLink,
 .starMapTelemetryReset {
-  flex: 0 0 auto;
+  display: inline-grid;
+  flex: 1 1 0;
+  place-items: center;
   min-height: var(--control-min);
   padding-inline: var(--space-3);
   border: var(--rule-hair) solid var(--color-story-accent);
@@ -771,8 +841,10 @@
   font-size: var(--text-sm);
   font-weight: 700;
   line-height: 1;
+  text-decoration: none;
 }
 
+.starMapStoreLink:focus-visible,
 .starMapTelemetryReset:focus-visible {
   outline: var(--rule-focus) solid var(--color-story-focus);
   outline-offset: var(--rule-focus-offset);
@@ -1028,6 +1100,7 @@
   .nextButton:hover:not(:disabled),
   .posterDownload:hover,
   .posterShare:hover,
+  .starMapStoreLink:hover,
   .starMapTelemetryReset:hover {
     background-color: var(--color-story-surface-raised);
     color: var(--color-story-ink);
@@ -1049,6 +1122,7 @@
   .nextButton,
   .posterDownload,
   .posterShare,
+  .starMapStoreLink,
   .starMapTelemetryReset {
     min-height: 3rem;
   }

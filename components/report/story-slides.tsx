@@ -298,7 +298,10 @@ export function StorySlide({
                 小时游戏则显示为档案信标。
               </p>
             </div>
-            <StarMap galaxy={report.galaxy} />
+            <StarMap
+              galaxy={report.galaxy}
+              gameMetadataByAppId={report.gameMetadata.games}
+            />
           </div>
         </article>
       );
