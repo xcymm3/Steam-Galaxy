@@ -54,7 +54,6 @@ describe("GalaxyGamePanel", () => {
     expect(screen.getByText("Action / Adventure")).toBeTruthy();
     expect(screen.getByText("单人 / 多人")).toBeTruthy();
     expect(screen.getByText("Orbit Works")).toBeTruthy();
-    expect(screen.getByText("A fast orbital archive run.")).toBeTruthy();
     expect(
       screen.getByRole("link", { name: "Steam 商店" }).getAttribute("href"),
     ).toBe("https://store.steampowered.com/app/424242/");

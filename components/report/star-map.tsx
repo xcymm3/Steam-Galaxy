@@ -481,9 +481,6 @@ export function GalaxyGamePanel({
           )}
         </div>
       )}
-      {metadata?.shortDescription && (
-        <p className={styles.starMapDescription}>{metadata.shortDescription}</p>
-      )}
       <div className={styles.starMapTelemetryActions}>
         <a
           className={styles.starMapStoreLink}
@@ -501,7 +498,6 @@ export function GalaxyGamePanel({
           返回全景
         </button>
       </div>
-      <p className={styles.starMapKeyboardHint}>按 Esc 或 0 也可返回全景</p>
     </section>
   );
 }
@@ -512,7 +508,7 @@ export function StarMap({
   gameMetadataByAppId,
 }: StarMapProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
-  const focusControllerRef = useRef<(nodeId: string | null) => void>(() => {});
+  const focusControllerRef = useRef<() => void>(() => {});
   const metadataByAppIdRef = useRef(gameMetadataByAppId);
   const requestedAppIdsRef = useRef(new Set(Object.keys(gameMetadataByAppId)));
   const galaxyScene = useMemo(() => createGalaxyScene(galaxy), [galaxy]);
@@ -526,12 +522,9 @@ export function StarMap({
   const selectedBody =
     galaxyScene.bodies.find((body) => body.node.id === selectedId) ?? null;
   const selectedNode = selectedBody?.node ?? null;
-  const selectGame = (nodeId: string | null) => {
-    setSelectedId(nodeId);
-    focusControllerRef.current(nodeId);
-  };
   const resetOverview = () => {
-    selectGame(null);
+    focusControllerRef.current();
+    setSelectedId(null);
   };
 
   const requestMetadata = useCallback((appId: number, force = false) => {
@@ -605,10 +598,6 @@ export function StarMap({
     canvas.setAttribute(
       "aria-label",
       "交互 Steam 星系；可拖动旋转，缩放视角并选择游戏星球。",
-    );
-    canvas.setAttribute(
-      "aria-describedby",
-      "star-map-hint star-map-volume-note star-map-navigator-help",
     );
     mount.replaceChildren(canvas);
 
@@ -842,18 +831,7 @@ export function StarMap({
       renderer.render(scene, camera);
     };
 
-    focusControllerRef.current = (nodeId) => {
-      if (!nodeId) {
-        applyFocus(null);
-        return;
-      }
-
-      const body = bodyById.get(nodeId);
-
-      if (body) {
-        selectPlanet(body.node);
-      }
-    };
+    focusControllerRef.current = () => applyFocus(null);
 
     const animate = () => {
       render();
@@ -1009,7 +987,7 @@ export function StarMap({
   useEffect(() => {
     if (selectedId && !galaxy.games.some((node) => node.id === selectedId)) {
       const resetFrame = window.requestAnimationFrame(() => {
-        focusControllerRef.current(null);
+        focusControllerRef.current();
         setSelectedId(null);
       });
 
@@ -1035,7 +1013,6 @@ export function StarMap({
           className={styles.starMapCanvas}
           role="group"
           aria-label={mapLabel}
-          aria-describedby="star-map-hint star-map-volume-note star-map-navigator-help"
         >
           {renderUnavailable && (
             <p className={styles.starMapFallback} role="status">
@@ -1060,32 +1037,6 @@ export function StarMap({
             onReset={resetOverview}
           />
         )}
-      </div>
-      <p id="star-map-hint" className={styles.starMapHint}>
-        单指拖动旋转 · 双指或滚轮缩放 · 轻触星球聚焦 · Esc 或 0 返回全景
-      </p>
-      <p id="star-map-volume-note" className={styles.starMapVolumeNote}>
-        已游玩星球的半径按累计时长的立方根计算：1000 小时的星球体积是 100 小时的
-        10 倍；0 小时游戏显示为档案信标。
-      </p>
-      <div className={styles.starMapNavigator}>
-        <label htmlFor="star-map-navigator">键盘定位星体</label>
-        <select
-          id="star-map-navigator"
-          value={selectedId ?? ""}
-          onChange={(event) => selectGame(event.target.value || null)}
-        >
-          <option value="">选择一颗可探索星体…</option>
-          {galaxy.games.map((node) => (
-            <option key={node.id} value={node.id}>
-              #{node.rank} · {node.game.name} ·{" "}
-              {formatHours(node.game.playtimeMinutes)} 小时
-            </option>
-          ))}
-        </select>
-        <p id="star-map-navigator-help" className={styles.starMapNavigatorHelp}>
-          可用键盘或读屏软件展开此列表，选择星体后会聚焦并打开对应游戏档案。
-        </p>
       </div>
     </figure>
   );
