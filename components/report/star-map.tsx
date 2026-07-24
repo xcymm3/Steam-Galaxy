@@ -43,6 +43,7 @@ import type { SteamStoreGameMetadata } from "@/lib/steam/store-metadata";
 import styles from "./galaxy-workbench.module.css";
 
 interface StarMapProps {
+  emptyMessage?: string;
   galaxy: GalaxyModel;
   gameMetadataByAppId: Record<string, SteamStoreGameMetadata>;
 }
@@ -505,7 +506,11 @@ export function GalaxyGamePanel({
   );
 }
 
-export function StarMap({ galaxy, gameMetadataByAppId }: StarMapProps) {
+export function StarMap({
+  emptyMessage = "当前公开库存没有可绘制的游戏记录。",
+  galaxy,
+  gameMetadataByAppId,
+}: StarMapProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const focusControllerRef = useRef<(nodeId: string | null) => void>(() => {});
   const metadataByAppIdRef = useRef(gameMetadataByAppId);
@@ -994,7 +999,7 @@ export function StarMap({ galaxy, gameMetadataByAppId }: StarMapProps) {
   if (galaxy.games.length === 0) {
     return (
       <p className={styles.starMapMessage} role="status">
-        当前公开库存没有可绘制的游戏记录。
+        {emptyMessage}
       </p>
     );
   }
