@@ -9,11 +9,13 @@ import {
   BufferGeometry,
   CanvasTexture,
   Color,
+  InstancedMesh,
   LineLoop,
   LineBasicMaterial,
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
+  Object3D,
   PerspectiveCamera,
   PointLight,
   Points,
@@ -29,17 +31,16 @@ import {
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-import { createStarMapLayout, type StarMapNode } from "@/lib/report/star-map";
+import type { GalaxyGameNode, GalaxyModel } from "@/lib/report/galaxy";
 import {
-  createThreeStarSystem,
-  type ThreeStarBody,
-} from "@/lib/report/three-star-system";
-import type { OwnedGame } from "@/lib/report/types";
+  createGalaxyScene,
+  type GalaxySceneBody,
+} from "@/lib/report/galaxy-scene";
 
 import styles from "./story-player.module.css";
 
 interface StarMapProps {
-  games: readonly OwnedGame[];
+  galaxy: GalaxyModel;
 }
 
 interface ThemeColors {
@@ -50,7 +51,6 @@ interface ThemeColors {
   ink: Color;
   inkCss: string;
   muted: Color;
-  nebula: string;
   ocean: string;
   paper: Color;
   paperCss: string;
@@ -59,8 +59,9 @@ interface ThemeColors {
 }
 
 const fullTurn = Math.PI * 2;
-const canvasTextureWidth = 512;
-const canvasTextureHeight = 256;
+const canvasTextureWidth = 256;
+const canvasTextureHeight = 128;
+const textureVariantCount = 4;
 
 function formatHours(minutes: number) {
   return (minutes / 60).toLocaleString("zh-CN", {
@@ -125,7 +126,6 @@ function getThemeColors(canvas: HTMLCanvasElement): ThemeColors {
     ink: getTokenColor(canvas, "--color-story-ink"),
     inkCss: getTokenValue(canvas, "--color-story-ink"),
     muted: getTokenColor(canvas, "--color-story-muted"),
-    nebula: getTokenValue(canvas, "--color-story-nebula"),
     ocean: getTokenValue(canvas, "--color-story-ocean"),
     paper: getTokenColor(canvas, "--color-story-paper"),
     paperCss: getTokenValue(canvas, "--color-story-paper"),
@@ -142,7 +142,7 @@ function createTextureCanvas() {
 }
 
 function createPlanetTexture(
-  body: ThreeStarBody,
+  variant: "star" | number,
   colors: ThemeColors,
 ): CanvasTexture {
   const canvas = createTextureCanvas();
@@ -152,26 +152,22 @@ function createPlanetTexture(
     return new CanvasTexture(canvas);
   }
 
-  const random = createRandom(body.node.id);
-  const variant = body.isCore
-    ? "star"
-    : body.node.kind === "nebula"
-      ? "nebula"
-      : body.solarSystemRole === "地球"
-        ? "ocean"
-        : ["ocean", "rust", "ice", "gas"][stableHash(body.node.id) % 4];
+  const random = createRandom(`galaxy-texture:${variant}`);
+  const surfaceKind =
+    variant === "star"
+      ? "star"
+      : (["ocean", "rust", "ice", "gas"][variant % textureVariantCount] ??
+        "ocean");
   const base =
-    variant === "rust"
+    surfaceKind === "rust"
       ? colors.rust
-      : variant === "ice"
+      : surfaceKind === "ice"
         ? colors.ice
-        : variant === "gas"
+        : surfaceKind === "gas"
           ? colors.gas
-          : variant === "nebula"
-            ? colors.nebula
-            : variant === "star"
-              ? colors.accent.getStyle()
-              : colors.ocean;
+          : surfaceKind === "star"
+            ? colors.accent.getStyle()
+            : colors.ocean;
   const surface = context.createLinearGradient(
     0,
     0,
@@ -184,7 +180,7 @@ function createPlanetTexture(
   context.fillStyle = surface;
   context.fillRect(0, 0, canvasTextureWidth, canvasTextureHeight);
 
-  if (variant === "gas" || variant === "star") {
+  if (surfaceKind === "gas" || surfaceKind === "star") {
     for (let index = 0; index < 18; index += 1) {
       context.fillStyle = index % 2 === 0 ? colors.inkCss : colors.paperCss;
       context.globalAlpha = 0.06 + random() * 0.18;
@@ -192,25 +188,12 @@ function createPlanetTexture(
         0,
         random() * canvasTextureHeight,
         canvasTextureWidth,
-        5 + random() * 21,
+        3 + random() * 12,
       );
-    }
-  } else if (variant === "nebula") {
-    for (let index = 0; index < 40; index += 1) {
-      context.fillStyle = colors.inkCss;
-      context.globalAlpha = 0.05 + random() * 0.15;
-      context.beginPath();
-      context.arc(
-        random() * canvasTextureWidth,
-        random() * canvasTextureHeight,
-        4 + random() * 24,
-        0,
-        fullTurn,
-      );
-      context.fill();
     }
   } else {
-    const landColor = variant === "ocean" ? colors.continent : colors.inkCss;
+    const landColor =
+      surfaceKind === "ocean" ? colors.continent : colors.inkCss;
 
     for (let index = 0; index < 17; index += 1) {
       context.fillStyle = landColor;
@@ -219,8 +202,8 @@ function createPlanetTexture(
       context.ellipse(
         random() * canvasTextureWidth,
         random() * canvasTextureHeight,
-        12 + random() * 40,
-        5 + random() * 17,
+        6 + random() * 20,
+        3 + random() * 9,
         (random() - 0.5) * Math.PI,
         0,
         fullTurn,
@@ -235,8 +218,8 @@ function createPlanetTexture(
       context.ellipse(
         random() * canvasTextureWidth,
         random() * canvasTextureHeight,
-        16 + random() * 54,
-        2 + random() * 9,
+        8 + random() * 27,
+        2 + random() * 5,
         (random() - 0.5) * Math.PI,
         0,
         fullTurn,
@@ -257,7 +240,7 @@ function createStarField(colors: ThemeColors) {
 
   for (let index = 0; index < count; index += 1) {
     const random = createRandom(`deep-field:${index}`);
-    const distance = 62 + random() * 138;
+    const distance = 78 + random() * 190;
     const theta = random() * fullTurn;
     const phi = Math.acos(2 * random() - 1);
     const offset = index * 3;
@@ -304,7 +287,7 @@ function createOrbit(orbitRadius: number, colors: ThemeColors) {
   const material = new LineBasicMaterial({
     color: colors.rule,
     transparent: true,
-    opacity: 0.23,
+    opacity: 0.18,
   });
 
   return {
@@ -314,17 +297,44 @@ function createOrbit(orbitRadius: number, colors: ThemeColors) {
   };
 }
 
-export function StarMap({ games }: StarMapProps) {
+function groupBodiesByTexture(bodies: GalaxySceneBody[]) {
+  const groups = new Map<number, GalaxySceneBody[]>();
+
+  bodies.forEach((body) => {
+    const group = groups.get(body.textureVariant) ?? [];
+    group.push(body);
+    groups.set(body.textureVariant, group);
+  });
+
+  return groups;
+}
+
+function assignBodyMatrices(mesh: InstancedMesh, bodies: GalaxySceneBody[]) {
+  const instance = new Object3D();
+
+  bodies.forEach((body, index) => {
+    instance.position.set(body.position.x, body.position.y, body.position.z);
+    instance.scale.setScalar(body.radius);
+    instance.updateMatrix();
+    mesh.setMatrixAt(index, instance.matrix);
+  });
+
+  mesh.instanceMatrix.needsUpdate = true;
+  mesh.computeBoundingSphere();
+}
+
+function selectedBodyKind(node: GalaxyGameNode) {
+  return node.kind === "planet" ? "行星" : "档案信标";
+}
+
+export function StarMap({ galaxy }: StarMapProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
-  const layout = useMemo(() => createStarMapLayout(games), [games]);
-  const solarSystem = useMemo(() => createThreeStarSystem(layout), [layout]);
+  const galaxyScene = useMemo(() => createGalaxyScene(galaxy), [galaxy]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [renderUnavailable, setRenderUnavailable] = useState(false);
-  const selectedNode =
-    layout.nodes.find((node) => node.id === selectedId) ?? null;
   const selectedBody =
-    solarSystem.bodies.find((body) => body.node.id === selectedNode?.id) ??
-    null;
+    galaxyScene.bodies.find((body) => body.node.id === selectedId) ?? null;
+  const selectedNode = selectedBody?.node ?? null;
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -358,7 +368,7 @@ export function StarMap({ games }: StarMapProps) {
     canvas.setAttribute("role", "application");
     canvas.setAttribute(
       "aria-label",
-      "交互游戏太阳系；可拖动旋转，缩放视角并选择星球。",
+      "交互 Steam 星系；可拖动旋转，缩放视角并选择游戏星球。",
     );
     canvas.setAttribute(
       "aria-describedby",
@@ -368,11 +378,11 @@ export function StarMap({ games }: StarMapProps) {
 
     const colors = getThemeColors(canvas);
     const scene = new Scene();
-    const camera = new PerspectiveCamera(39, 1, 0.1, 350);
+    const camera = new PerspectiveCamera(39, 1, 0.1, 420);
     camera.position.set(
-      solarSystem.cameraDistance * 0.72,
-      solarSystem.cameraDistance * 0.42,
-      solarSystem.cameraDistance * 0.72,
+      galaxyScene.cameraDistance * 0.72,
+      galaxyScene.cameraDistance * 0.42,
+      galaxyScene.cameraDistance * 0.72,
     );
     const controls = new OrbitControls(camera, canvas);
     const reduceMotion = window.matchMedia(
@@ -383,9 +393,9 @@ export function StarMap({ games }: StarMapProps) {
     controls.enableDamping = true;
     controls.dampingFactor = 0.055;
     controls.autoRotate = !reduceMotion;
-    controls.autoRotateSpeed = 0.34;
-    controls.minDistance = Math.max(8, solarSystem.cameraDistance * 0.22);
-    controls.maxDistance = solarSystem.cameraDistance * 1.9;
+    controls.autoRotateSpeed = 0.22;
+    controls.minDistance = Math.max(8, galaxyScene.cameraDistance * 0.1);
+    controls.maxDistance = galaxyScene.cameraDistance * 1.75;
     controls.maxPolarAngle = Math.PI * 0.86;
     controls.minPolarAngle = Math.PI * 0.14;
     controls.update();
@@ -395,14 +405,15 @@ export function StarMap({ games }: StarMapProps) {
     renderer.toneMapping = ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.25;
 
-    scene.add(new AmbientLight(colors.ink, 0.48));
-    const coreLight = new PointLight(colors.accent, 88, 96, 1.7);
+    scene.add(new AmbientLight(colors.ink, 0.46));
+    const coreLight = new PointLight(colors.accent, 112, 132, 1.7);
     coreLight.position.set(0, 0, 0);
     scene.add(coreLight);
     const field = createStarField(colors);
     scene.add(field.field);
 
-    const sphereGeometry = new SphereGeometry(1, 44, 28);
+    const sphereGeometry = new SphereGeometry(1, 32, 20);
+    const archiveGeometry = new SphereGeometry(1, 14, 10);
     const ringGeometry = new TorusGeometry(1, 0.045, 8, 64);
     const ringMaterial = new MeshBasicMaterial({
       color: colors.accent,
@@ -414,8 +425,11 @@ export function StarMap({ games }: StarMapProps) {
     selectedRing.rotation.x = Math.PI / 2;
     selectedRing.visible = false;
     scene.add(selectedRing);
-    const pickable: Mesh[] = [];
-    const planetMeshes = new Map<string, Mesh>();
+
+    const pickable: Object3D[] = [];
+    const bodyById = new Map(
+      galaxyScene.bodies.map((body) => [body.node.id, body]),
+    );
     const disposableTextures: CanvasTexture[] = [];
     const disposableMaterials: Array<
       | MeshStandardMaterial
@@ -425,64 +439,108 @@ export function StarMap({ games }: StarMapProps) {
     > = [ringMaterial, field.material];
     const disposableGeometries: BufferGeometry[] = [
       sphereGeometry,
+      archiveGeometry,
       ringGeometry,
       field.geometry,
     ];
 
-    const selectPlanet = (node: StarMapNode) => {
-      const mesh = planetMeshes.get(node.id);
+    const selectPlanet = (node: GalaxyGameNode) => {
+      const body = bodyById.get(node.id);
 
-      if (mesh) {
-        const body = solarSystem.bodies.find(
-          (item) => item.node.id === node.id,
+      if (body) {
+        selectedRing.position.set(
+          body.position.x,
+          body.position.y,
+          body.position.z,
         );
-        selectedRing.position.copy(mesh.position);
-        selectedRing.scale.setScalar(
-          Math.max(0.75, (body?.radius ?? 1) * 1.38),
-        );
+        selectedRing.scale.setScalar(Math.max(0.5, body.radius * 1.42));
         selectedRing.visible = true;
       }
 
       setSelectedId(node.id);
     };
 
-    const occupiedOrbits = new Set<number>();
-    solarSystem.bodies.forEach((body) => {
-      if (!body.isCore && body.node.kind !== "dust") {
-        const orbitKey = Math.round(body.orbitRadius / 8) * 8;
-
-        if (!occupiedOrbits.has(orbitKey)) {
-          occupiedOrbits.add(orbitKey);
-          const orbit = createOrbit(orbitKey, colors);
-          scene.add(orbit.orbit);
-          disposableMaterials.push(orbit.material);
-          disposableGeometries.push(orbit.geometry);
-        }
-      }
-
-      const texture = createPlanetTexture(body, colors);
-      disposableTextures.push(texture);
-      const material = new MeshStandardMaterial({
-        map: texture,
-        roughness: body.isCore ? 0.45 : 0.78,
-        metalness: body.node.kind === "nebula" ? 0.24 : 0.04,
-        transparent: body.node.kind === "nebula",
-        opacity: body.node.kind === "nebula" ? 0.66 : 1,
-        emissive: body.isCore ? colors.accent : colors.paper,
-        emissiveIntensity: body.isCore ? 1.4 : 0.03,
+    const coreBody = galaxyScene.bodies.find((body) => body.isCore) ?? null;
+    if (coreBody) {
+      const starTexture = createPlanetTexture("star", colors);
+      const coreMaterial = new MeshStandardMaterial({
+        emissive: colors.accent,
+        emissiveIntensity: 1.4,
+        map: starTexture,
+        metalness: 0.03,
+        roughness: 0.45,
       });
-      const mesh = new Mesh(sphereGeometry, material);
-      mesh.position.set(body.position.x, body.position.y, body.position.z);
-      mesh.scale.setScalar(body.radius);
-      mesh.userData.node = body.node;
-      mesh.name = body.node.name;
-      scene.add(mesh);
-      disposableMaterials.push(material);
-      planetMeshes.set(body.node.id, mesh);
+      const coreMesh = new Mesh(sphereGeometry, coreMaterial);
+      coreMesh.position.set(
+        coreBody.position.x,
+        coreBody.position.y,
+        coreBody.position.z,
+      );
+      coreMesh.scale.setScalar(coreBody.radius);
+      coreMesh.userData.body = coreBody;
+      coreMesh.name = coreBody.node.game.name;
+      scene.add(coreMesh);
+      pickable.push(coreMesh);
+      disposableTextures.push(starTexture);
+      disposableMaterials.push(coreMaterial);
+    }
 
-      if (body.node.kind !== "dust") {
-        pickable.push(mesh);
+    const planetBodies = galaxyScene.bodies.filter(
+      (body) => !body.isCore && body.node.kind === "planet",
+    );
+    const textureGroups = groupBodiesByTexture(planetBodies);
+    textureGroups.forEach((bodies, textureVariant) => {
+      const texture = createPlanetTexture(textureVariant, colors);
+      const material = new MeshStandardMaterial({
+        emissive: colors.paper,
+        emissiveIntensity: 0.035,
+        map: texture,
+        metalness: 0.04,
+        roughness: 0.78,
+      });
+      const mesh = new InstancedMesh(sphereGeometry, material, bodies.length);
+      mesh.userData.bodies = bodies;
+      mesh.name = `planet-batch:${textureVariant}`;
+      assignBodyMatrices(mesh, bodies);
+      scene.add(mesh);
+      pickable.push(mesh);
+      disposableTextures.push(texture);
+      disposableMaterials.push(material);
+    });
+
+    const archiveBodies = galaxyScene.bodies.filter(
+      (body) => body.node.kind === "archive-signal",
+    );
+    if (archiveBodies.length > 0) {
+      const archiveMaterial = new MeshBasicMaterial({
+        color: colors.muted,
+        transparent: true,
+        opacity: 0.82,
+      });
+      const archiveMesh = new InstancedMesh(
+        archiveGeometry,
+        archiveMaterial,
+        archiveBodies.length,
+      );
+      archiveMesh.userData.bodies = archiveBodies;
+      archiveMesh.name = "archive-signals";
+      assignBodyMatrices(archiveMesh, archiveBodies);
+      scene.add(archiveMesh);
+      pickable.push(archiveMesh);
+      disposableMaterials.push(archiveMaterial);
+    }
+
+    const occupiedOrbits = new Set<number>();
+    galaxyScene.bodies.forEach((body) => {
+      if (body.isCore || occupiedOrbits.has(body.orbitBand)) {
+        return;
       }
+
+      occupiedOrbits.add(body.orbitBand);
+      const orbit = createOrbit(body.orbitRadius, colors);
+      scene.add(orbit.orbit);
+      disposableMaterials.push(orbit.material);
+      disposableGeometries.push(orbit.geometry);
     });
 
     const raycaster = new Raycaster();
@@ -533,7 +591,15 @@ export function StarMap({ games }: StarMapProps) {
       pointer.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
       raycaster.setFromCamera(pointer, camera);
       const hit = raycaster.intersectObjects(pickable, false)[0];
-      const node = hit?.object.userData.node as StarMapNode | undefined;
+      const directBody = hit?.object.userData.body as
+        GalaxySceneBody | undefined;
+      const batchBodies = hit?.object.userData.bodies as
+        GalaxySceneBody[] | undefined;
+      const node =
+        directBody?.node ??
+        (hit?.instanceId === undefined
+          ? undefined
+          : batchBodies?.[hit.instanceId]?.node);
 
       if (node) {
         selectPlanet(node);
@@ -602,17 +668,17 @@ export function StarMap({ games }: StarMapProps) {
       renderer.dispose();
       mount.replaceChildren();
     };
-  }, [solarSystem]);
+  }, [galaxyScene]);
 
-  if (layout.state === "empty" || solarSystem.bodies.length === 0) {
+  if (galaxy.games.length === 0) {
     return (
       <p className={styles.starMapMessage} role="status">
-        当前公开库存没有可绘制的游玩记录。
+        当前公开库存没有可绘制的游戏记录。
       </p>
     );
   }
 
-  const mapLabel = `Three.js 游戏太阳系，展示时长最高的 ${solarSystem.bodies.length} 款游戏；星球体积严格按游玩时长映射。`;
+  const mapLabel = `Three.js Steam 星系，展示时长最高的 ${galaxy.games.length} 款游戏；已游玩星球的体积严格按游玩时长映射。`;
 
   return (
     <figure className={styles.starMapFigure}>
@@ -638,17 +704,17 @@ export function StarMap({ games }: StarMapProps) {
           >
             <div className={styles.starMapTelemetryHead}>
               <p>星体档案</p>
-              <span>{selectedBody?.solarSystemRole ?? "轨道"}</span>
+              <span>#{selectedNode.rank}</span>
             </div>
-            <h3>{selectedNode.name}</h3>
+            <h3>{selectedNode.game.name}</h3>
             <dl className={styles.starMapTelemetryMetrics}>
               <div>
                 <dt>累计时长</dt>
-                <dd>{formatHours(selectedNode.playtimeMinutes)} 小时</dd>
+                <dd>{formatHours(selectedNode.game.playtimeMinutes)} 小时</dd>
               </div>
               <div>
-                <dt>体积规则</dt>
-                <dd>V ∝ 时长</dd>
+                <dt>星体类型</dt>
+                <dd>{selectedBodyKind(selectedNode)}</dd>
               </div>
             </dl>
           </section>
@@ -658,7 +724,8 @@ export function StarMap({ games }: StarMapProps) {
         单指拖动旋转 · 双指或滚轮缩放 · 轻触星球展开档案 · 方向键旋转
       </p>
       <p id="star-map-volume-note" className={styles.starMapVolumeNote}>
-        半径按游玩时长的立方根计算：1000 小时的星球体积是 100 小时的 10 倍。
+        已游玩星球的半径按累计时长的立方根计算：1000 小时的星球体积是 100 小时的
+        10 倍；0 小时游戏显示为档案信标。
       </p>
     </figure>
   );

@@ -293,10 +293,12 @@ export function StorySlide({
                 {metrics.playedGameCount} 颗已点亮的星。
               </SlideHeading>
               <p className={styles.slideLead}>
-                只保留时长最高的十款游戏，依次映射为太阳、八大行星与冥王星；星球体积严格来自累计时长。
+                时长最高的 100
+                款游戏构成可探索星系；已游玩星球的体积严格来自累计时长，0
+                小时游戏则显示为档案信标。
               </p>
             </div>
-            <StarMap games={report.games} />
+            <StarMap galaxy={report.galaxy} />
           </div>
         </article>
       );

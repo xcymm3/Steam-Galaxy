@@ -139,7 +139,7 @@ describe("StoryPlayer", () => {
 
     expect(
       screen.getByRole("group", {
-        name: /Three\.js 游戏太阳系，展示时长最高的 4 款游戏/,
+        name: /Three\.js Steam 星系，展示时长最高的 6 款游戏/,
       }),
     ).toBeTruthy();
     expect(screen.queryByText(/《Main Sequence》累计 100 小时/)).toBeNull();
