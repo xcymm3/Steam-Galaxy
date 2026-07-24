@@ -35,12 +35,12 @@ export default async function Home({ searchParams }: HomePageProps) {
       <main id="top" className="pageShell">
         <section className="hero" aria-labelledby="page-title">
           <div className="heroCopy">
-            <p className="eyebrow">Steam lifetime report</p>
-            <h1 id="page-title">看看时间都去了哪里。</h1>
+            <p className="eyebrow">Steam game galaxy</p>
+            <h1 id="page-title">把 Steam 库展开成你的游戏星系。</h1>
             <p className="lead">
               输入 SteamID，或通过 Steam
               登录确认身份。我们只读取当前公开资料与游戏详情，
-              并将它们整理成一份可浏览、可分享的游戏生涯报告。
+              并让累计游玩时长成为每个游戏星体的真实体积。
             </p>
             <ul className="trustList" aria-label="数据处理说明">
               <li>API Key 只存在于服务端</li>
@@ -54,7 +54,7 @@ export default async function Home({ searchParams }: HomePageProps) {
         <footer id="principles" className="siteFooter">
           <span>不伪造历史 · 默认不留存 · 移动端优先</span>
           <span className="footerRule" aria-hidden="true" />
-          <span>DATA CHECKPOINT / 08</span>
+          <span>GALAXY CHECKPOINT / 08</span>
         </footer>
       </main>
     </>

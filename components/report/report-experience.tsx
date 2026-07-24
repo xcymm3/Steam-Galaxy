@@ -5,9 +5,9 @@ import { useSyncExternalStore } from "react";
 
 import type { ReportData } from "@/lib/report/types";
 
-import { loadReportProgress, loadReportSession } from "./report-session";
-import { StoryPlayer } from "./story-player";
-import styles from "./story-player.module.css";
+import { GalaxyWorkbench } from "./galaxy-workbench";
+import { loadReportSession } from "./report-session";
+import styles from "./galaxy-workbench.module.css";
 
 const subscribeToHydration = () => () => undefined;
 const getClientSnapshot = () => true;
@@ -23,7 +23,7 @@ export function ReportExperience() {
   if (!hydrated) {
     return (
       <main className={styles.recoveryState} aria-busy="true">
-        <p>正在恢复这次报告…</p>
+        <p>正在恢复这片星系…</p>
       </main>
     );
   }
@@ -34,9 +34,9 @@ export function ReportExperience() {
     return (
       <main className={styles.recoveryState}>
         <div>
-          <p className={styles.recoveryCode}>REPORT / MISSING</p>
-          <h1>当前标签页里没有报告。</h1>
-          <p>先回到首页读取一次公开 Steam 数据，再进入十页故事。</p>
+          <p className={styles.recoveryCode}>GALAXY / MISSING</p>
+          <h1>当前标签页里没有星系。</h1>
+          <p>先回到首页读取一次公开 Steam 数据，再打开你的游戏星系。</p>
           <Link className={styles.recoveryLink} href="/">
             返回首页读取数据
           </Link>
@@ -45,11 +45,5 @@ export function ReportExperience() {
     );
   }
 
-  return (
-    <StoryPlayer
-      report={report}
-      initialPage={loadReportProgress(window.sessionStorage)}
-      storage={window.sessionStorage}
-    />
-  );
+  return <GalaxyWorkbench report={report} />;
 }

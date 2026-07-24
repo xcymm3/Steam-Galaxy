@@ -40,7 +40,7 @@ import {
 import { fetchSteamStoreMetadata } from "@/lib/steam/store-metadata-api";
 import type { SteamStoreGameMetadata } from "@/lib/steam/store-metadata";
 
-import styles from "./story-player.module.css";
+import styles from "./galaxy-workbench.module.css";
 
 interface StarMapProps {
   galaxy: GalaxyModel;

@@ -45,7 +45,7 @@ afterEach(() => {
 });
 
 describe("SteamReportConsole report entry", () => {
-  it("stores successful ReportData before navigating to the Story Player", async () => {
+  it("stores successful ReportData before navigating to the Galaxy Workbench", async () => {
     const user = userEvent.setup();
     render(<SteamReportConsole />);
 
@@ -57,9 +57,9 @@ describe("SteamReportConsole report entry", () => {
 
     await screen.findByRole("heading", {
       level: 3,
-      name: "夜航员_01，报告数据就绪",
+      name: "夜航员_01，星系数据就绪",
     });
-    await user.click(screen.getByRole("button", { name: "进入十页报告" }));
+    await user.click(screen.getByRole("button", { name: "打开游戏星系" }));
 
     expect(loadReportSession(window.sessionStorage)).toEqual(report);
     expect(pushMock).toHaveBeenCalledWith("/report");
@@ -76,16 +76,16 @@ describe("SteamReportConsole report entry", () => {
     await user.click(screen.getByRole("button", { name: "读取公开数据" }));
     await screen.findByRole("heading", {
       level: 3,
-      name: "夜航员_01，报告数据就绪",
+      name: "夜航员_01，星系数据就绪",
     });
 
     vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
       throw new Error("blocked");
     });
-    await user.click(screen.getByRole("button", { name: "进入十页报告" }));
+    await user.click(screen.getByRole("button", { name: "打开游戏星系" }));
 
     expect(screen.getByRole("alert").textContent).toContain(
-      "浏览器没有允许保存这次报告",
+      "浏览器没有允许保存这次星系快照",
     );
     expect(pushMock).not.toHaveBeenCalled();
   });
@@ -108,7 +108,7 @@ describe("SteamReportConsole report entry", () => {
 
     await screen.findByRole("heading", {
       level: 3,
-      name: "夜航员_01，报告数据就绪",
+      name: "夜航员_01，星系数据就绪",
     });
 
     expect(fetch).toHaveBeenCalledWith(

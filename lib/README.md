@@ -19,5 +19,5 @@ Steam 网关、标准化与报告分析等非 UI 模块放在此目录。业务�
 - `titles.ts`：条件与文案分离的称号优先级规则。
 - `analyze.ts`：把 `SteamSnapshot` 转换为唯一 `ReportData`。
 - `types.ts`：`OwnedGame`、`ReportMetrics`、`PlayerTitle` 与 `ReportData` 契约。
-- `star-map.ts`：不依赖 React 的确定性 circle-packing 星图布局与长尾聚合。
-- `poster.ts`：不依赖 React 的固定尺寸海报模型、首页二维码 URL 和可降级的图片资产加载器。
+- `galaxy.ts`：不依赖 React 的确定性星系模型、前 100 个独立天体与长尾聚合。
+- `galaxy-scene.ts`：星系轨道、镜头焦点与批量渲染场景数据。

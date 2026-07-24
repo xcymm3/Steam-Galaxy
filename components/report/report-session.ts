@@ -1,7 +1,7 @@
 import type { ReportData } from "@/lib/report/types";
 
 const reportStorageKey = "steam-report:data:v3";
-const progressStorageKey = "steam-report:page:v1";
+const legacyProgressStorageKey = "steam-report:page:v1";
 const reportStorageVersion = 3;
 
 interface StoredReport {
@@ -49,7 +49,6 @@ export function saveReportSession(
 
   try {
     storage.setItem(reportStorageKey, JSON.stringify(value));
-    storage.setItem(progressStorageKey, "0");
     return true;
   } catch {
     clearReportSession(storage);
@@ -81,31 +80,7 @@ export function loadReportSession(storage: SessionStorage): ReportData | null {
   }
 }
 
-export function saveReportProgress(
-  storage: SessionStorage,
-  pageIndex: number,
-): void {
-  if (!Number.isInteger(pageIndex) || pageIndex < 0 || pageIndex > 9) {
-    return;
-  }
-
-  try {
-    storage.setItem(progressStorageKey, String(pageIndex));
-  } catch {
-    // Progress restoration is optional; the current report remains usable.
-  }
-}
-
-export function loadReportProgress(storage: SessionStorage): number {
-  try {
-    const value = Number(storage.getItem(progressStorageKey));
-    return Number.isInteger(value) && value >= 0 && value <= 9 ? value : 0;
-  } catch {
-    return 0;
-  }
-}
-
 export function clearReportSession(storage: SessionStorage): void {
   removeItemSafely(storage, reportStorageKey);
-  removeItemSafely(storage, progressStorageKey);
+  removeItemSafely(storage, legacyProgressStorageKey);
 }

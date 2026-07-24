@@ -27,7 +27,7 @@ const steamErrorMessages: Record<SteamErrorCode, string> = {
   PROFILE_UNAVAILABLE: "Steam 暂时没有返回这位玩家的资料。请稍后重试。",
   GAME_DETAILS_PRIVATE:
     "这位玩家的“游戏详情”没有公开。请在 Steam 隐私设置中将游戏详情设为公开后重试。",
-  EMPTY_LIBRARY: "这个公开库存里还没有可用于生成报告的游戏。",
+  EMPTY_LIBRARY: "这个公开库存里还没有可用于生成星系的游戏。",
   STEAM_TIMEOUT: "Steam 响应超时了。请稍后重试。",
   STEAM_RATE_LIMITED: "Steam 暂时拒绝了太多请求。请稍后再试。",
   STEAM_UNAUTHORIZED: "Steam API Key 无法完成这次请求。请检查服务端配置。",

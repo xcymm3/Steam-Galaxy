@@ -3,9 +3,7 @@ import { describe, expect, it } from "vitest";
 import { analyzeSteamSnapshot } from "@/lib/report/analyze";
 import {
   clearReportSession,
-  loadReportProgress,
   loadReportSession,
-  saveReportProgress,
   saveReportSession,
 } from "@/components/report/report-session";
 
@@ -30,27 +28,13 @@ class MemoryStorage {
 const report = analyzeSteamSnapshot(ordinaryPlayerFixture);
 
 describe("report session", () => {
-  it("round-trips a report and resets its page progress", () => {
+  it("round-trips a galaxy report without storing reader progress", () => {
     const storage = new MemoryStorage();
 
-    saveReportProgress(storage, 7);
     expect(saveReportSession(storage, report)).toBe(true);
 
     expect(loadReportSession(storage)).toEqual(report);
-    expect(loadReportProgress(storage)).toBe(0);
-  });
-
-  it("accepts only page indexes from the ten-page player", () => {
-    const storage = new MemoryStorage();
-
-    saveReportProgress(storage, 9);
-    expect(loadReportProgress(storage)).toBe(9);
-
-    saveReportProgress(storage, 10);
-    expect(loadReportProgress(storage)).toBe(9);
-
-    saveReportProgress(storage, 1.5);
-    expect(loadReportProgress(storage)).toBe(9);
+    expect(storage.getItem("steam-report:page:v1")).toBeNull();
   });
 
   it("removes corrupted or unsupported report payloads", () => {
@@ -67,15 +51,15 @@ describe("report session", () => {
     expect(loadReportSession(storage)).toBeNull();
   });
 
-  it("clears report data and progress together", () => {
+  it("clears report data and the legacy reader progress key", () => {
     const storage = new MemoryStorage();
 
     expect(saveReportSession(storage, report)).toBe(true);
-    saveReportProgress(storage, 4);
+    storage.setItem("steam-report:page:v1", "4");
     clearReportSession(storage);
 
     expect(loadReportSession(storage)).toBeNull();
-    expect(loadReportProgress(storage)).toBe(0);
+    expect(storage.getItem("steam-report:page:v1")).toBeNull();
   });
 
   it("fails safely when browser storage is blocked", () => {
@@ -93,7 +77,6 @@ describe("report session", () => {
 
     expect(saveReportSession(blockedStorage, report)).toBe(false);
     expect(loadReportSession(blockedStorage)).toBeNull();
-    expect(loadReportProgress(blockedStorage)).toBe(0);
     expect(() => clearReportSession(blockedStorage)).not.toThrow();
   });
 });

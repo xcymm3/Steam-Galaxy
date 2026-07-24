@@ -348,11 +348,11 @@ function SuccessState({ ref, report, onReset }: SuccessStateProps) {
   const [isNavigating, startNavigation] = useTransition();
   const [launchError, setLaunchError] = useState("");
 
-  function handleOpenStory() {
+  function handleOpenGalaxy() {
     setLaunchError("");
 
     if (!saveReportSession(window.sessionStorage, report)) {
-      setLaunchError("浏览器没有允许保存这次报告。请检查隐私设置后再试。");
+      setLaunchError("浏览器没有允许保存这次星系快照。请检查隐私设置后再试。");
       return;
     }
 
@@ -364,7 +364,7 @@ function SuccessState({ ref, report, onReset }: SuccessStateProps) {
       <div className="resultHeading">
         <div>
           <p className="resultEyebrow">SNAPSHOT / READY</p>
-          <h3>{report.player.displayName}，报告数据就绪</h3>
+          <h3>{report.player.displayName}，星系数据就绪</h3>
         </div>
         <span className="successBadge">Public</span>
       </div>
@@ -388,35 +388,26 @@ function SuccessState({ ref, report, onReset }: SuccessStateProps) {
         </div>
       </dl>
 
-      <div className="jsonHeading">
-        <h4>分析结果 JSON</h4>
-        <a href={report.player.profileUrl} target="_blank" rel="noreferrer">
-          核对 Steam 资料
-        </a>
-      </div>
-      <pre className="jsonOutput" tabIndex={0} aria-label="Steam 报告 JSON">
-        <code>{JSON.stringify(report, null, 2)}</code>
-      </pre>
       <div className="resultActions">
         <button
           className="storyButton"
           type="button"
-          onClick={handleOpenStory}
+          onClick={handleOpenGalaxy}
           disabled={isNavigating}
           data-state={
             isNavigating ? "loading" : launchError ? "error" : "default"
           }
           aria-busy={isNavigating}
-          aria-describedby={launchError ? "story-launch-error" : undefined}
+          aria-describedby={launchError ? "galaxy-launch-error" : undefined}
         >
-          {isNavigating ? "正在打开…" : "进入十页报告"}
+          {isNavigating ? "正在打开…" : "打开游戏星系"}
         </button>
         <button className="textButton" type="button" onClick={onReset}>
           验证另一个 SteamID
         </button>
       </div>
       {launchError && (
-        <p id="story-launch-error" className="launchError" role="alert">
+        <p id="galaxy-launch-error" className="launchError" role="alert">
           {launchError}
         </p>
       )}

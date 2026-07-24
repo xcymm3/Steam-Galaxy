@@ -1,21 +1,21 @@
 # 系统架构
 
 - 状态：Accepted
-- 版本：0.8
-- 日期：2026-07-21
-- 范围：MVP
+- 版本：1.0
+- 日期：2026-07-24
+- 范围：Steam 游戏星系
 
 ## 1. 架构目标
 
-建立一条尽可能短、可测试且不依赖数据库的生成链路：
+建立一条短、可测试、不依赖数据库的链路：
 
-1. 用户提供 SteamID，或通过 Steam OpenID 登录得到 SteamID。
+1. 用户输入 SteamID，或通过 Steam OpenID 登录得到 SteamID。
 2. Next.js 服务端读取 Steam 的公开资料与游戏库。
-3. 纯函数分析层把原始数据转换为稳定的报告模型。
-4. React 客户端播放 10 页故事。
-5. 客户端使用相同分析模型在本地生成 PNG 海报。
+3. 纯函数分析层把原始数据转换为稳定的 `ReportData` 与星系模型。
+4. React 在单页工作台中以 Three.js 呈现可探索的游戏星系。
+5. 只有用户点选某颗星体时，客户端才按需读取该 AppID 的公开商店元数据。
 
-这套架构首先服务个人作品集和低并发公开网站，不提前引入用户系统、任务队列、数据库或复杂微服务。
+不提前引入用户系统、任务队列、数据库或复杂微服务。完整游戏库不在服务端持久化，报告只保留在当前浏览器标签页。
 
 ## 2. 系统边界
 
@@ -26,190 +26,116 @@ flowchart LR
     C --> D
     D --> E["Steam Web API"]
     E --> F["Steam 数据标准化"]
-    F --> G["报告分析引擎"]
-    G --> H["10 页 Story Player"]
-    G --> I["PNG 海报生成器"]
-    I --> J["下载或系统分享"]
+    F --> G["报告与星系分析"]
+    G --> H["Galaxy Workbench"]
+    H --> I["Three.js 互动星系"]
+    H --> J["按需 AppID 元数据"]
+    J --> K["Steam 商店公开接口"]
 ```
 
-浏览器永远不直接持有 Steam Web API Key。所有 Steam 请求通过 Next.js Route Handler 发出。
+浏览器不持有 Steam Web API Key，也不直接请求 Steam API。个人游戏库只经由同源报告接口读取；星体详情只能经由受限的同源 AppID 元数据接口读取。
 
 ## 3. 运行时组件
 
 ### 3.1 Landing
 
-职责：
-
 - 接受 SteamID64、自定义 ID 或 Steam 个人资料 URL。
 - 提供“使用 Steam 登录”入口。
-- 解释只支持公开的游戏详情。
-- 不在浏览器中直接调用 Steam API。
+- 读取成功后把报告写入当前标签页，并进入 `/report`。
+- 不在浏览器直接调用 Steam API。
 
-### 3.2 Steam Identity Resolver
+### 3.2 Steam Gateway 与标准化
 
-职责：
+- 只访问硬编码的 Steam 主机、路径与接口。
+- 校验第三方响应，把分钟数归一为整数，并将缺失字段显式转换为 `null` 或空集合。
+- 将公开资料不可用、游戏库私密、超时、限流和异常响应映射为项目错误码。
+- 不包含星体布局或 UI 规则。
 
-- 识别 SteamID64。
-- 从受支持的 Steam 个人资料 URL 中提取标识符。
-- 将自定义 ID 解析为 SteamID64。
-- 拒绝任意外部 URL，避免把输入处理变成通用代理或 SSRF 入口。
+### 3.3 Report 与 Galaxy Analyzer
 
-### 3.3 Steam Gateway
+- 按稳定规则计算累计时长、已游玩数量、Top 游戏与称号基础指标。
+- 时长最高的 100 款生成独立 `GalaxyNode`；其余游戏生成一个长尾档案聚合。
+- 体积按累计时长严格比例映射：1000 小时对应 100 小时的 10 倍体积。
+- 未游玩游戏保留为弱档案信号，不伪装成发光行星。
+- `galaxy-scene.ts` 只生成轨道、镜头焦点和绘制参数，不依赖 React 或 Three.js。
 
-职责：
+分析层必须是纯函数，保证接口响应、单元测试和客户端渲染使用同一份事实模型。
 
-- 集中管理 Steam API 的主机、路径、超时和 API Key。
-- 获取玩家基本资料。
-- 获取可见的游戏库与累计游玩时长。
-- 把 Steam 错误转换为项目内部错误码。
-- 不包含报告业务规则。
+### 3.4 Galaxy Workbench
 
-### 3.4 Normalizer
+- `/report` 只渲染一个可持续探索的星系工作台，而非分页故事播放器。
+- `StarMap` 用 Three.js 实例化绘制独立星体、长尾信号、轨道和环境粒子。
+- 支持拖动、缩放、点击与键盘选择；聚焦星体时镜头平滑移动。
+- 详情面板始终保留基础游戏信息、可访问名称和重置焦点入口。
+- 尊重 `prefers-reduced-motion`，并在 WebGL 不可用时展示可读降级信息。
 
-职责：
+### 3.5 AppID Store Metadata
 
-- 校验第三方响应结构。
-- 将 Steam 的分钟数统一保留为整数分钟。
-- 把缺失字段显式转换为 `null` 或默认空集合。
-- 过滤无法用于报告的畸形条目，但保留诊断信息。
-
-### 3.5 Report Analyzer
-
-职责：
-
-- 计算总时长、游戏数量、触达比例和集中度。
-- 排序 Top 游戏。
-- 识别未游玩和低时长游戏。
-- 调用称号规则引擎。
-- 产出与 React、Canvas、海报渲染均无关的报告模型。
-
-分析层必须是纯函数。这是单元测试和复用海报数据的基础。
-
-### 3.6 Title Engine
-
-职责：
-
-- 根据明确阈值匹配称号。
-- 在多个规则同时满足时，根据优先级选择唯一主称号。
-- 同时产出一句可解释原因。
-- MVP 不读取游戏类型，也不调用大语言模型。
-
-### 3.7 Star Layout Engine
-
-职责：
-
-- 根据累计时长计算星球面积。
-- 生成确定性 circle-packing 坐标。
-- 对大型库存设置可视节点上限并聚合长尾数据。
-- 输出几何数据，不直接依赖 Canvas 或 SVG。
-
-客户端星图 Canvas 和海报 Canvas 应复用同一份几何结果。
-
-### 3.8 Story Player
-
-职责：
-
-- 每次只展示一个故事页面。
-- 管理当前页、前后翻页、进度和方向键。
-- 在移动端支持触控，但不依赖自动播放。
-- 尊重 `prefers-reduced-motion`。
-- 退出或刷新时允许从当前标签页的 `sessionStorage` 恢复一次报告。
-
-实现状态：Phase 4 已接入。首页只在用户选择进入报告时写入 `ReportData`，写入成功后导航到 `/report`；损坏或版本不兼容的会话数据会被清理，缺失会话显示返回首页的恢复入口。
-
-### 3.9 Poster Renderer
-
-职责：
-
-- 接收当前标签页中已经过验证的报告摘要，不额外提交玩家资料到海报接口。
-- 使用客户端 Canvas 生成固定 1080 × 1440 PNG。
-- 嵌入固定首页二维码，不在二维码中携带 SteamID。
-- 在头像或游戏图标不可用时生成纯文字降级版。
-- 提供下载；浏览器支持 Web Share Files 时提供系统分享。
+- `/api/steam/store/[appId]` 仅接受合法的公开 AppID。
+- 服务端请求 Steam 商店公开接口，返回名称、封面、类型、系列与单人/多人模式等可公开字段。
+- 元数据以 AppID 为键缓存；不缓存玩家 SteamID、游戏库或报告。
+- 客户端按需发起请求，加载、不可用和重试状态都在详情面板中明确表达。
 
 ## 4. 路由状态
 
-Phase 2A 已实现与框架无关的 Steam 数据内核，Phase 2B 已将首页接入服务端接口，Phase 3 已把标准化快照转换为唯一 `ReportData`，Phase 4 已接通首页、标签页会话与十页 Story Player，Phase 5 已完成 Canvas 星图，Phase 6 已在末页接通本地 PNG 海报生成、下载和系统分享降级，Phase 7 已接通 Steam OpenID 与已有报告流程，Phase 8 已补齐错误文案、图片降级、海报重试与超长昵称保护。真实公开账号联调仍需配置 Steam API Key 与生产 `APP_ORIGIN`。
+| 路径                       | 方法 | 职责                                         |
+| -------------------------- | ---- | -------------------------------------------- |
+| `/`                        | GET  | 接受 Steam 身份输入并准备游戏星系            |
+| `/report`                  | GET  | 恢复当前标签页报告并打开游戏星系工作台       |
+| `/api/steam/report`        | POST | 校验身份、读取 Steam 数据、返回 `ReportData` |
+| `/api/steam/store/[appId]` | GET  | 按需返回可公开的 AppID 商店元数据            |
+| `/api/auth/steam/start`    | GET  | 创建状态 Cookie 并跳转 Steam OpenID          |
+| `/api/auth/steam/callback` | GET  | 验证 Steam 断言并签发一次性 SteamID Cookie   |
+| `/api/auth/steam/consume`  | POST | 消费 SteamID Cookie 并返回既有 `ReportData`  |
 
-| 路径                       | 方法 | 状态           | 职责                                       |
-| -------------------------- | ---- | -------------- | ------------------------------------------ |
-| `/`                        | GET  | Phase 4 已接入 | 接受 Steam 身份输入并进入 Story Player     |
-| `/report`                  | GET  | Phase 4 已接入 | 恢复标签页报告并播放十页故事               |
-| `/api/steam/report`        | POST | Phase 3 已接入 | 校验身份、读取 Steam 数据、返回 ReportData |
-| `/api/auth/steam/start`    | GET  | Phase 7 已接入 | 创建状态 Cookie 并跳转 Steam OpenID        |
-| `/api/auth/steam/callback` | GET  | Phase 7 已接入 | 验证 Steam 断言并签发一次性 SteamID Cookie |
-| `/api/auth/steam/consume`  | POST | Phase 7 已接入 | 消费 SteamID Cookie 并返回既有 ReportData  |
-| `/api/poster`              | POST | 不设置         | 海报在客户端生成，无需传输玩家报告摘要     |
-
-`POST /api/steam/report` 默认不缓存玩家数据，并返回明确的内部错误码，而不是把 Steam 原始错误直接暴露给前端。
+`POST /api/steam/report` 使用 `Cache-Control: private, no-store`，不缓存玩家数据。`GET /api/steam/store/[appId]` 只缓存可公开的 AppID 元数据，并返回明确的 `Cache-Control` 时间窗口。
 
 ## 5. 目录边界
 
-顶层所有权边界已创建；Phase 2A 数据内核已经落地，其余业务文件仍按对应阶段逐步加入，不提前创建空实现。
-
 ```text
 app/
-  layout.tsx
   page.tsx
-  globals.css
   report/page.tsx
   api/
-    steam/report/route.ts    # Phase 2B-1 已实现
-    auth/steam/start/route.ts
-    auth/steam/callback/route.ts
-    auth/steam/consume/route.ts
+    steam/report/route.ts
+    steam/store/[appId]/route.ts
+    auth/steam/{start,callback,consume}/route.ts
 
 components/
-  README.md
-  landing/                  # Phase 2B-2 与 Phase 4 入口
-  report/                   # Phase 4 已实现
+  landing/
+  report/
+    galaxy-workbench.tsx
+    galaxy-workbench.module.css
     report-experience.tsx
     report-session.ts
-    story-player.tsx
-    story-player.module.css
-    story-slides.tsx
-    poster-generator.ts
-  star-map/                 # Phase 5
+    star-map.tsx
 
 lib/
-  README.md
-  steam/                    # Phase 2A 已实现
+  steam/
     client.ts
-    resolve-id.ts
-    schemas.ts
-    errors.ts
-    normalizers.ts
+    get-report.ts
     get-snapshot.ts
-    types.ts
-  report/                   # Phase 3 已实现
+    openid.ts
+    store-metadata.ts
+  report/
     analyze.ts
+    galaxy.ts
+    galaxy-scene.ts
     metrics.ts
     titles.ts
     types.ts
-    poster.ts                # Phase 6
-
-styles/
-  README.md
 
 tests/
-  README.md
-  fixtures/steam/           # Phase 2A 已实现
+  fixtures/
   unit/
-    project-setup.test.ts
-    steam-client.test.ts
-    steam-resolve-id.test.ts
-    steam-snapshot.test.ts
-  e2e/                      # 后续阶段
-
-tokens.css
 ```
 
 依赖方向固定为：
 
 ```text
-UI → report model
+UI → report model + store metadata client
 API route → steam gateway → normalizer → analyzer
-poster → report model + star geometry
+galaxy scene → galaxy model
 analyzer × React
 analyzer × Next.js
 ```
@@ -221,112 +147,60 @@ analyzer × Next.js
 ### 6.1 SteamID 输入
 
 1. 用户提交 ID 或个人资料 URL。
-2. 服务端解析为 SteamID64。
-3. 并行请求玩家资料与公开游戏库。
-4. 标准化并分析数据。
-5. 返回一次性报告模型。
-6. 客户端进入报告播放器。
+2. 服务端解析为 SteamID64，并并行请求玩家资料与公开游戏库。
+3. 标准化并分析数据，返回一次性 `ReportData`。
+4. 客户端写入标签页会话并打开游戏星系。
 
 ### 6.2 Steam 登录
 
 1. 服务端生成带短时效状态值的 OpenID 请求。
 2. 用户在 Steam 页面完成登录。
-3. 回调验证提供者响应和状态值。
-4. 从 Claimed ID 中提取 SteamID64。
-5. 将 SteamID 放入两分钟 HttpOnly Cookie，并由同源消费接口一次性读取。
-6. 客户端获得与手动输入完全相同的 `ReportData`，进入报告播放器。
+3. 回调验证提供者响应和状态值，并从 Claimed ID 提取 SteamID64。
+4. SteamID 写入两分钟 HttpOnly Cookie，由同源消费接口一次性读取。
+5. 客户端获得同样的 `ReportData` 并进入游戏星系。
 
 Steam 登录只证明 SteamID 的归属，不被视为访问私密游戏库的授权。
 
-## 7. 状态与存储策略
+## 7. 状态、安全与性能
 
-### 服务端
+### 状态与缓存
 
-- 不建立数据库。
-- 不保存玩家报告。
-- 不把完整 Steam 响应写入日志。
-- OpenID 状态放在 10 分钟随机状态 Cookie 中；生产 HTTPS 发送 `HttpOnly`、`Secure`、`SameSite=Lax` 属性。
-- 验证后的 SteamID 仅放在两分钟 HttpOnly Cookie 中，并由一次性消费接口立即删除。
-- 玩家报告接口使用 `Cache-Control: private, no-store`。
+- 不建立数据库，不保存玩家报告，不把完整 Steam 响应写入日志。
+- `sessionStorage` 只支持当前标签页刷新恢复；不使用 `localStorage` 保存报告。
+- OpenID 状态放在 10 分钟随机状态 Cookie 中；验证后的 SteamID 仅放在两分钟 HttpOnly Cookie 中。
+- AppID 商店元数据不含个人信息，可使用服务端缓存；报告本身不可缓存。
 
-### 客户端
+### 安全边界
 
-- React 内存保存当前报告。
-- 可用 `sessionStorage` 支持标签页内刷新恢复。
-- 不使用 `localStorage` 长期保存玩家报告。
-- 分享二维码只指向首页，其他用户不会看到原玩家的报告。
+- `STEAM_WEB_API_KEY` 只存在于服务端环境变量。
+- 所有输入和 AppID 都在外部请求前校验；外部主机与路径均为固定白名单。
+- OpenID 回调必须验证 `check_authentication`、返回地址、状态值、签名字段和 Steam Provider。
+- 日志不记录完整 SteamID、玩家昵称、完整游戏列表、OpenID 返回参数或 API Key。
 
-### 静态元数据
+### 性能预算
 
-如果第二阶段加入游戏类型数据，只允许缓存不含个人信息的 AppID 元数据；这不改变玩家报告无持久化的原则。
+- 单独绘制上限为 100 个游戏；剩余库存聚合为长尾档案信号。
+- 渲染使用实例化网格与共享纹理，避免为每颗星体创建独立 React 树。
+- 商店元数据和封面仅在选中星体时请求；失败不得阻塞星系浏览。
+- 移动端优先保证拖动、缩放、键盘选择和降级说明可用，避免横向溢出。
 
-## 8. 安全边界
+## 8. 错误模型
 
-- `STEAM_WEB_API_KEY` 仅存在于服务端环境变量。
-- 所有用户输入在发起外部请求前进行长度、格式和字符集校验。
-- 只请求硬编码的 Steam 主机和接口，不请求用户提供的任意 URL。
-- 外部请求必须有超时、取消和统一错误映射。
-- OpenID 回调必须验证 `check_authentication` 结果、返回地址、状态值、签名字段和 Steam Provider。
-- 海报渲染器只使用当前报告推导出的 Steam 游戏图标 URL；头像或图标下载失败不会阻断生成。
-- 日志不记录完整 SteamID；需要关联时使用请求级随机 ID。
-- 公开部署后如出现滥用，优先使用部署平台限流或挑战机制，而不是为此引入数据库。
+| 服务端错误码或客户端状态     | 用户提示方向                   | 是否可重试            |
+| ---------------------------- | ------------------------------ | --------------------- |
+| `INVALID_STEAM_ID`           | 没找到这个 Steam 用户          | 修改输入              |
+| `PROFILE_UNAVAILABLE`        | 玩家资料暂时不可用             | 可以                  |
+| `GAME_DETAILS_PRIVATE`       | 游戏详情未公开，并提供设置引导 | 修改 Steam 设置后重试 |
+| `EMPTY_LIBRARY`              | 没有游戏可生成星系             | 通常不需要            |
+| `STEAM_TIMEOUT`              | Steam 响应超时                 | 可以                  |
+| `STEAM_RATE_LIMITED`         | 请求过于频繁                   | 稍后重试              |
+| `STEAM_UNAUTHORIZED`         | API Key 无法完成请求           | 检查服务端配置        |
+| `STEAM_BAD_RESPONSE`         | Steam 响应结构异常             | 可以                  |
+| `CONFIGURATION_ERROR`        | 服务端缺少 API Key             | 配置后重试            |
+| `OPENID_STATE_INVALID`       | 登录状态已过期                 | 重新发起 Steam 登录   |
+| `OPENID_VERIFICATION_FAILED` | Steam 未确认登录断言           | 重新发起 Steam 登录   |
+| `OPENID_TIMEOUT`             | Steam 登录验证超时             | 可以                  |
+| 商店元数据不可用             | 保留游戏基础信息，提供重试     | 可以                  |
+| `UNKNOWN_UPSTREAM_ERROR`     | Steam 暂时走丢了               | 可以                  |
 
-## 9. 错误模型
-
-| 服务端错误码或客户端状态     | 用户提示方向                     | 是否可重试            |
-| ---------------------------- | -------------------------------- | --------------------- |
-| `INVALID_STEAM_ID`           | 没找到这个 Steam 用户            | 修改输入              |
-| `PROFILE_UNAVAILABLE`        | 玩家资料暂时不可用               | 可以                  |
-| `GAME_DETAILS_PRIVATE`       | 游戏详情未公开，并提供设置引导   | 修改 Steam 设置后重试 |
-| `EMPTY_LIBRARY`              | 没有足够数据生成报告             | 通常不需要            |
-| `STEAM_TIMEOUT`              | Steam 响应超时                   | 可以                  |
-| `STEAM_RATE_LIMITED`         | 请求过于频繁                     | 稍后重试              |
-| `STEAM_UNAUTHORIZED`         | API Key 无法完成请求             | 检查服务端配置        |
-| `STEAM_BAD_RESPONSE`         | Steam 响应结构异常               | 可以                  |
-| `CONFIGURATION_ERROR`        | 服务端缺少 API Key               | 配置后重试            |
-| `OPENID_STATE_INVALID`       | 登录状态已过期                   | 重新发起 Steam 登录   |
-| `OPENID_VERIFICATION_FAILED` | Steam 未确认登录断言             | 重新发起 Steam 登录   |
-| `OPENID_TIMEOUT`             | Steam 登录验证超时               | 可以                  |
-| 海报生成失败（客户端状态）   | 保留报告，并允许重试或下载降级版 | 可以                  |
-| `UNKNOWN_UPSTREAM_ERROR`     | Steam 暂时走丢了                 | 可以                  |
-
-前端不得通过“响应为空”猜测私密状态；Gateway 必须把可能的状态集中归一化。海报失败不属于 Steam API 错误码，由播放器在浏览器本地处理。
-
-## 10. 性能预算
-
-- 报告页首屏只加载当前和下一页所需资源。
-- 星图移动端最多绘制 100 个独立节点。
-- 游戏图标失败不得阻塞故事页面。
-- 头像、海报外部图片或 Canvas 编码失败必须保留可读文本与重试/下载路径。
-- 超长昵称必须允许页面换行；固定尺寸海报至多绘制两行并省略剩余文本。
-- 页面切换只动画 `opacity` 和 `transform`。
-- 报告交互目标为主流移动设备稳定响应，不以桌面特效为优先。
-- 海报生成独立于浏览器 DOM 截图；跨域图片无法安全写入 Canvas 时会自动用文字或编号降级后重新生成。
-
-## 11. 可观测性
-
-允许记录：
-
-- 随机请求 ID
-- 路由名称
-- Steam 请求耗时
-- 游戏条目数量区间
-- 内部错误码
-- 应用版本
-
-禁止记录：
-
-- 完整 SteamID
-- 玩家昵称和头像 URL
-- 完整游戏列表
-- OpenID 返回参数
-- Steam API Key
-
-## 12. 后续仍需决定
-
-- 包管理器：已确定 pnpm 11.9.0。
-- Node.js：已确定 22.17.0，仓库通过 `.node-version` 和 pnpm 配置统一版本。
-- 部署平台：保持平台中立，实施前根据 OpenID 回调、Node Runtime 和图片生成支持确认。
-- OpenID 2.0 库：当前以固定 Steam Provider 和 `check_authentication` 实现最小验证器；若未来支持其他 Provider，再评估引入库。
-- 中文字体：确认自托管字体体积和授权后再锁定。
-- 正式首页 URL：海报二维码需要稳定地址后才能定稿。
+前端不得通过“响应为空”猜测私密状态；Gateway 必须把可能的状态集中归一化。商店元数据失败不是游戏库读取失败，详情面板必须明确区分二者。

@@ -43,7 +43,7 @@ export function getReportErrorPresentation(
         title: "这片宇宙还没有可读取的游戏",
         detail: error.message,
         guidance:
-          "这是公开的空库存，不是隐私错误。当前没有足够数据生成报告，可以换一个 SteamID 验证链路。",
+          "这是公开的空库存，不是隐私错误。当前没有足够数据生成星系，可以换一个 SteamID 验证链路。",
         retryLabel: null,
       };
     case "CONFIGURATION_ERROR":
