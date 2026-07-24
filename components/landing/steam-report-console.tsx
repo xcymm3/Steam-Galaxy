@@ -229,20 +229,12 @@ export function SteamReportConsole({
   const isLoading = state.status === "loading";
 
   return (
-    <section className="lookupPanel" aria-labelledby="lookup-title">
-      <div className="panelHeading">
-        <p className="panelIndex">LIVE DATA / 008</p>
-        <span className="connectionBadge">
-          <span className="connectionDot" aria-hidden="true" />
-          Server-side only
-        </span>
-      </div>
-
+    <section
+      className="lookupPanel"
+      aria-labelledby="lookup-title"
+      data-status={state.status}
+    >
       <h2 id="lookup-title">连接你的 Steam 游戏库</h2>
-      <p className="panelLead">
-        输入 SteamID64、自定义 ID 或个人资料链接。浏览器只会请求本站接口，API
-        Key 不会离开服务端。
-      </p>
 
       <form
         className="lookupForm"
@@ -263,15 +255,11 @@ export function SteamReportConsole({
             placeholder="76561198… / custom-id / steamcommunity.com/id/…"
             required
             spellCheck={false}
-            aria-describedby="steam-id-hint"
           />
           <button className="submitButton" type="submit" disabled={isLoading}>
             {isLoading ? "正在读取…" : "读取公开数据"}
           </button>
         </div>
-        <p id="steam-id-hint" className="formHint">
-          只读取公开资料与公开游戏详情，不保存 Steam 返回值。
-        </p>
       </form>
 
       <div className="steamLoginDivider" aria-hidden="true">
@@ -282,9 +270,6 @@ export function SteamReportConsole({
       <a className="steamLoginButton" href="/api/auth/steam/start">
         使用 Steam 登录
       </a>
-      <p className="steamLoginHint">
-        Steam 登录只确认 SteamID；公开游戏详情仍按相同隐私设置读取。
-      </p>
       {authStatus &&
         authStatus !== "success" &&
         steamAuthNotices[authStatus] && (
@@ -294,7 +279,6 @@ export function SteamReportConsole({
         )}
 
       <div className="lookupResult" aria-live="polite">
-        {state.status === "idle" && <IdleState />}
         {state.status === "loading" && <LoadingState input={state.input} />}
         {state.status === "success" && (
           <SuccessState
@@ -313,15 +297,6 @@ export function SteamReportConsole({
         )}
       </div>
     </section>
-  );
-}
-
-function IdleState() {
-  return (
-    <div className="idleState">
-      <p>等待输入</p>
-      <span>成功后会在这里显示经过校验、标准化和分析的 ReportData。</span>
-    </div>
   );
 }
 

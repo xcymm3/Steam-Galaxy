@@ -62,11 +62,8 @@ button {
 .siteHeader {
   position: relative;
   z-index: var(--z-nav);
-  width: min(
-    calc(100% - (2 * var(--layout-phone-gutter))),
-    var(--layout-phone-max)
-  );
-  margin: max(var(--space-4), env(safe-area-inset-top)) auto 0;
+  width: min(calc(100% - (2 * var(--layout-phone-gutter))), var(--layout-max));
+  margin: max(var(--space-3), env(safe-area-inset-top)) auto 0;
 }
 
 .siteNav {
@@ -126,20 +123,27 @@ button {
 }
 
 .pageShell {
-  width: min(
-    calc(100% - (2 * var(--layout-phone-gutter))),
-    var(--layout-phone-max)
-  );
+  width: min(calc(100% - (2 * var(--layout-phone-gutter))), var(--layout-max));
+  min-height: 0;
   margin: 0 auto;
+}
+
+.landingPage {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100vh;
+  height: 100dvh;
+  overflow: clip;
 }
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-10);
-  align-items: start;
-  min-height: auto;
-  padding: var(--space-10) 0 var(--space-16);
+  grid-template-columns: minmax(0, 0.8fr) minmax(20rem, 0.72fr);
+  gap: clamp(var(--space-8), 7vw, var(--space-20));
+  align-items: center;
+  height: 100%;
+  min-height: 0;
+  padding: clamp(var(--space-5), 5vh, var(--space-12)) 0;
 }
 
 .heroCopy {
@@ -151,7 +155,7 @@ button {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  margin: 0 0 var(--space-6);
+  margin: 0 0 var(--space-4);
   color: var(--color-accent);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
@@ -168,7 +172,7 @@ button {
 
 h1 {
   min-width: 0;
-  max-width: 10ch;
+  max-width: 9ch;
   margin: 0;
   font-family: var(--font-display);
   font-size: var(--text-hero);
@@ -177,39 +181,6 @@ h1 {
   line-height: var(--leading-tight);
   overflow-wrap: anywhere;
   text-wrap: balance;
-}
-
-.lead {
-  max-width: 60ch;
-  margin: var(--space-8) 0 0;
-  color: var(--color-ink-muted);
-  font-size: var(--text-lg);
-  line-height: var(--leading-copy);
-}
-
-.trustList {
-  display: grid;
-  gap: var(--space-3);
-  margin-top: var(--space-8);
-  padding: 0;
-  color: var(--color-ink-muted);
-  font-size: var(--text-sm);
-  list-style: none;
-}
-
-.trustList li {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.trustList li::before {
-  width: 0.5rem;
-  height: 0.5rem;
-  flex: none;
-  border-radius: 50%;
-  background: var(--color-success);
-  content: "";
 }
 
 .lookupPanel {
@@ -222,23 +193,6 @@ h1 {
   animation: enter var(--duration-enter) var(--ease-standard) 80ms both;
 }
 
-.panelHeading {
-  display: flex;
-  gap: var(--space-4);
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-10);
-}
-
-.panelIndex {
-  margin: 0;
-  color: var(--color-ink-faint);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  letter-spacing: var(--tracking-label);
-}
-
-.connectionBadge,
 .successBadge {
   display: inline-flex;
   gap: var(--space-2);
@@ -253,14 +207,6 @@ h1 {
   white-space: nowrap;
 }
 
-.connectionDot {
-  width: 0.4rem;
-  height: 0.4rem;
-  border-radius: 50%;
-  background: var(--color-success);
-  box-shadow: 0 0 0.8rem var(--color-success);
-}
-
 .lookupPanel h2 {
   margin: 0;
   font-family: var(--font-display);
@@ -268,16 +214,10 @@ h1 {
   line-height: 1.15;
 }
 
-.panelLead {
-  margin: var(--space-3) 0 0;
-  color: var(--color-ink-muted);
-  line-height: var(--leading-copy);
-}
-
 .lookupForm {
   display: grid;
   gap: var(--space-3);
-  margin-top: var(--space-8);
+  margin-top: var(--space-6);
 }
 
 .lookupForm label {
@@ -410,18 +350,11 @@ h1 {
   }
 }
 
-.formHint {
-  margin: 0;
-  color: var(--color-ink-faint);
-  font-size: var(--text-xs);
-  line-height: 1.6;
-}
-
 .steamLoginDivider {
   display: flex;
   gap: var(--space-3);
   align-items: center;
-  margin-top: var(--space-6);
+  margin-top: var(--space-4);
   color: var(--color-ink-faint);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
@@ -454,7 +387,6 @@ h1 {
     transform var(--duration-fast) var(--ease-standard);
 }
 
-.steamLoginHint,
 .steamAuthNotice {
   margin: var(--space-3) 0 0;
   color: var(--color-ink-faint);
@@ -472,13 +404,11 @@ h1 {
 }
 
 .lookupResult {
-  min-height: 6rem;
-  margin-top: var(--space-8);
+  margin-top: var(--space-6);
   border-top: 1px solid var(--color-rule);
-  padding-top: var(--space-6);
+  padding-top: var(--space-5);
 }
 
-.idleState,
 .loadingState {
   display: flex;
   gap: var(--space-4);
@@ -487,18 +417,12 @@ h1 {
   color: var(--color-ink-muted);
 }
 
-.idleState {
-  justify-content: space-between;
-}
-
-.idleState p,
 .loadingState p {
   margin: 0;
   color: var(--color-ink);
   font-weight: 700;
 }
 
-.idleState span,
 .loadingState span {
   font-size: var(--text-xs);
 }
@@ -692,18 +616,21 @@ h1 {
   letter-spacing: 0.05em;
 }
 
-.siteFooter {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--space-4);
-  align-items: center;
-  padding: var(--space-6) 0 max(var(--space-8), env(safe-area-inset-bottom));
-  color: var(--color-ink-faint);
-  font-size: var(--text-xs);
+.lookupPanel[data-status="idle"] .lookupResult {
+  display: none;
 }
 
-.footerRule {
+.lookupPanel:not([data-status="idle"]) > h2,
+.lookupPanel:not([data-status="idle"]) > .lookupForm,
+.lookupPanel:not([data-status="idle"]) > .steamLoginDivider,
+.lookupPanel:not([data-status="idle"]) > .steamLoginButton {
   display: none;
+}
+
+.lookupPanel:not([data-status="idle"]) .lookupResult {
+  margin-top: 0;
+  border-top: 0;
+  padding-top: 0;
 }
 
 @keyframes enter {
@@ -730,25 +657,34 @@ h1 {
   }
 }
 
-@media (max-width: 30rem) {
+@media (max-width: 48rem) {
+  .siteHeader,
+  .pageShell {
+    width: min(
+      calc(100% - (2 * var(--layout-phone-gutter))),
+      var(--layout-phone-max)
+    );
+  }
+
   .siteNav {
     padding-left: var(--space-4);
   }
 
   .hero {
-    gap: var(--space-10);
-    padding-top: var(--space-10);
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+    align-content: center;
+    padding: var(--space-5) 0;
   }
 
   .lookupPanel {
     margin-inline: calc(-1 * var(--space-1));
-    padding: var(--space-5);
+    padding: var(--space-4);
   }
 
-  .panelHeading,
   .resultHeading,
   .jsonHeading,
-  .idleState {
+  .loadingState {
     align-items: flex-start;
   }
 }
