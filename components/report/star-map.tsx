@@ -34,6 +34,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import type { GalaxyGameNode, GalaxyModel } from "@/lib/report/galaxy";
 import {
   createGalaxyScene,
+  getGalaxyFocusDistance,
   type GalaxySceneBody,
 } from "@/lib/report/galaxy-scene";
 
@@ -329,12 +330,17 @@ function selectedBodyKind(node: GalaxyGameNode) {
 
 export function StarMap({ galaxy }: StarMapProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
+  const focusControllerRef = useRef<(nodeId: string | null) => void>(() => {});
   const galaxyScene = useMemo(() => createGalaxyScene(galaxy), [galaxy]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [renderUnavailable, setRenderUnavailable] = useState(false);
   const selectedBody =
     galaxyScene.bodies.find((body) => body.node.id === selectedId) ?? null;
   const selectedNode = selectedBody?.node ?? null;
+  const resetOverview = () => {
+    focusControllerRef.current(null);
+    setSelectedId(null);
+  };
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -379,16 +385,18 @@ export function StarMap({ galaxy }: StarMapProps) {
     const colors = getThemeColors(canvas);
     const scene = new Scene();
     const camera = new PerspectiveCamera(39, 1, 0.1, 420);
-    camera.position.set(
+    const overviewCameraPosition = new Vector3(
       galaxyScene.cameraDistance * 0.72,
       galaxyScene.cameraDistance * 0.42,
       galaxyScene.cameraDistance * 0.72,
     );
+    const overviewTarget = new Vector3(0, 0, 0);
+    camera.position.copy(overviewCameraPosition);
     const controls = new OrbitControls(camera, canvas);
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    controls.target.set(0, 0, 0);
+    controls.target.copy(overviewTarget);
     controls.enablePan = false;
     controls.enableDamping = true;
     controls.dampingFactor = 0.055;
@@ -448,13 +456,7 @@ export function StarMap({ galaxy }: StarMapProps) {
       const body = bodyById.get(node.id);
 
       if (body) {
-        selectedRing.position.set(
-          body.position.x,
-          body.position.y,
-          body.position.z,
-        );
-        selectedRing.scale.setScalar(Math.max(0.5, body.radius * 1.42));
-        selectedRing.visible = true;
+        applyFocus(body);
       }
 
       setSelectedId(node.id);
@@ -547,10 +549,72 @@ export function StarMap({ galaxy }: StarMapProps) {
     const pointer = new Vector2();
     let pointerDown: { x: number; y: number } | null = null;
     let animationFrame = 0;
+    let isFocused = false;
+    let focusGoal: { cameraPosition: Vector3; target: Vector3 } | null = null;
+
+    const applyFocus = (body: GalaxySceneBody | null) => {
+      isFocused = body !== null;
+      selectedRing.visible = body !== null;
+
+      const target = body
+        ? new Vector3(body.position.x, body.position.y, body.position.z)
+        : overviewTarget.clone();
+      const relativeCameraPosition = camera.position
+        .clone()
+        .sub(controls.target);
+      const direction =
+        relativeCameraPosition.lengthSq() > 0.0001
+          ? relativeCameraPosition.normalize()
+          : overviewCameraPosition.clone().sub(overviewTarget).normalize();
+      const distance = body
+        ? getGalaxyFocusDistance(galaxyScene, body)
+        : overviewCameraPosition.distanceTo(overviewTarget);
+      const cameraPosition = target
+        .clone()
+        .add(direction.multiplyScalar(distance));
+
+      if (body) {
+        selectedRing.position.copy(target);
+        selectedRing.scale.setScalar(Math.max(0.5, body.radius * 1.42));
+      }
+
+      controls.autoRotate = body ? false : !reduceMotion;
+
+      if (reduceMotion) {
+        camera.position.copy(cameraPosition);
+        controls.target.copy(target);
+        controls.update();
+        focusGoal = null;
+        render();
+        return;
+      }
+
+      focusGoal = { cameraPosition, target };
+    };
 
     const render = () => {
+      if (focusGoal) {
+        camera.position.lerp(focusGoal.cameraPosition, 0.12);
+        controls.target.lerp(focusGoal.target, 0.12);
+
+        if (
+          camera.position.distanceToSquared(focusGoal.cameraPosition) < 0.001 &&
+          controls.target.distanceToSquared(focusGoal.target) < 0.001
+        ) {
+          camera.position.copy(focusGoal.cameraPosition);
+          controls.target.copy(focusGoal.target);
+          focusGoal = null;
+        }
+      }
+
       controls.update();
       renderer.render(scene, camera);
+    };
+
+    focusControllerRef.current = (nodeId) => {
+      const body = nodeId ? (bodyById.get(nodeId) ?? null) : null;
+
+      applyFocus(body);
     };
 
     const animate = () => {
@@ -608,32 +672,63 @@ export function StarMap({ galaxy }: StarMapProps) {
       pointerDown = null;
     };
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" || event.key === "0") {
+        event.preventDefault();
+        applyFocus(null);
+        setSelectedId(null);
+        return;
+      }
+
       if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
         event.preventDefault();
-        camera.position.applyAxisAngle(
+        focusGoal = null;
+        controls.autoRotate = false;
+        const relativeCameraPosition = camera.position.sub(controls.target);
+        relativeCameraPosition.applyAxisAngle(
           new Vector3(0, 1, 0),
           event.key === "ArrowLeft" ? 0.12 : -0.12,
         );
+        camera.position.copy(controls.target).add(relativeCameraPosition);
         render();
       }
 
       if (event.key === "+" || event.key === "=") {
         event.preventDefault();
-        camera.position.multiplyScalar(0.9);
+        focusGoal = null;
+        controls.autoRotate = false;
+        const relativeCameraPosition = camera.position.sub(controls.target);
+        relativeCameraPosition.multiplyScalar(0.9);
+        relativeCameraPosition.clampLength(
+          controls.minDistance,
+          controls.maxDistance,
+        );
+        camera.position.copy(controls.target).add(relativeCameraPosition);
         render();
       }
 
       if (event.key === "-") {
         event.preventDefault();
-        camera.position.multiplyScalar(1.1);
+        focusGoal = null;
+        controls.autoRotate = false;
+        const relativeCameraPosition = camera.position.sub(controls.target);
+        relativeCameraPosition.multiplyScalar(1.1);
+        relativeCameraPosition.clampLength(
+          controls.minDistance,
+          controls.maxDistance,
+        );
+        camera.position.copy(controls.target).add(relativeCameraPosition);
         render();
       }
+    };
+    const cancelFocusOnControl = () => {
+      focusGoal = null;
+      controls.autoRotate = false;
     };
     const pauseAutoRotate = () => {
       controls.autoRotate = false;
     };
     const resumeAutoRotate = () => {
-      controls.autoRotate = !reduceMotion;
+      controls.autoRotate = !reduceMotion && !isFocused;
     };
 
     const resizeObserver = new ResizeObserver(resize);
@@ -645,6 +740,7 @@ export function StarMap({ galaxy }: StarMapProps) {
     canvas.addEventListener("pointerleave", resumeAutoRotate);
     canvas.addEventListener("focus", pauseAutoRotate);
     canvas.addEventListener("blur", resumeAutoRotate);
+    controls.addEventListener("start", cancelFocusOnControl);
     resize();
 
     if (!reduceMotion) {
@@ -660,8 +756,10 @@ export function StarMap({ galaxy }: StarMapProps) {
       canvas.removeEventListener("pointerleave", resumeAutoRotate);
       canvas.removeEventListener("focus", pauseAutoRotate);
       canvas.removeEventListener("blur", resumeAutoRotate);
+      controls.removeEventListener("start", cancelFocusOnControl);
       window.cancelAnimationFrame(animationFrame);
       controls.dispose();
+      focusControllerRef.current = () => {};
       disposableTextures.forEach((texture) => texture.dispose());
       disposableMaterials.forEach((material) => material.dispose());
       disposableGeometries.forEach((geometry) => geometry.dispose());
@@ -717,11 +815,21 @@ export function StarMap({ galaxy }: StarMapProps) {
                 <dd>{selectedBodyKind(selectedNode)}</dd>
               </div>
             </dl>
+            <div className={styles.starMapTelemetryActions}>
+              <button
+                className={styles.starMapTelemetryReset}
+                type="button"
+                onClick={resetOverview}
+              >
+                返回全景
+              </button>
+              <p>按 Esc 或 0 也可返回全景</p>
+            </div>
           </section>
         )}
       </div>
       <p id="star-map-hint" className={styles.starMapHint}>
-        单指拖动旋转 · 双指或滚轮缩放 · 轻触星球展开档案 · 方向键旋转
+        单指拖动旋转 · 双指或滚轮缩放 · 轻触星球聚焦 · Esc 或 0 返回全景
       </p>
       <p id="star-map-volume-note" className={styles.starMapVolumeNote}>
         已游玩星球的半径按累计时长的立方根计算：1000 小时的星球体积是 100 小时的

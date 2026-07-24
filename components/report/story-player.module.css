@@ -745,6 +745,39 @@
   font-variant-numeric: tabular-nums;
 }
 
+.starMapTelemetryActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.starMapTelemetryActions p {
+  margin: 0;
+  color: var(--color-story-faint);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+
+.starMapTelemetryReset {
+  flex: 0 0 auto;
+  min-height: var(--control-min);
+  padding-inline: var(--space-3);
+  border: var(--rule-hair) solid var(--color-story-accent);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-story-ink);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.starMapTelemetryReset:focus-visible {
+  outline: var(--rule-focus) solid var(--color-story-focus);
+  outline-offset: var(--rule-focus-offset);
+}
+
 .starMapDetail,
 .starMapAggregation,
 .starMapMessage {
@@ -994,7 +1027,8 @@
   .backButton:hover:not(:disabled),
   .nextButton:hover:not(:disabled),
   .posterDownload:hover,
-  .posterShare:hover {
+  .posterShare:hover,
+  .starMapTelemetryReset:hover {
     background-color: var(--color-story-surface-raised);
     color: var(--color-story-ink);
     transform: translateY(-1px);
@@ -1014,7 +1048,8 @@
   .backButton,
   .nextButton,
   .posterDownload,
-  .posterShare {
+  .posterShare,
+  .starMapTelemetryReset {
     min-height: 3rem;
   }
 }
