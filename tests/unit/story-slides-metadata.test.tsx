@@ -20,8 +20,10 @@ const report = {
         appType: "game",
         developers: [],
         genres: ["角色扮演"],
+        headerImageUrl: null,
         modes: ["single-player" as const],
         publishers: [],
+        shortDescription: null,
       },
     },
     modes: [

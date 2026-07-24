@@ -19,7 +19,9 @@ const storeAppSchema = z
     genres: z.array(storeLabelSchema).optional(),
     categories: z.array(storeLabelSchema).optional(),
     developers: z.array(z.string()).optional(),
+    header_image: z.string().url().optional(),
     publishers: z.array(z.string()).optional(),
+    short_description: z.string().optional(),
   })
   .passthrough();
 
@@ -39,9 +41,11 @@ export interface SteamStoreGameMetadata {
   appId: number;
   appType: string | null;
   genres: string[];
+  headerImageUrl: string | null;
   modes: SteamStoreGameMode[];
   developers: string[];
   publishers: string[];
+  shortDescription: string | null;
 }
 
 interface CacheEntry {
@@ -121,12 +125,14 @@ function toMetadata(
   return {
     appId,
     appType: data.type ?? null,
+    headerImageUrl: data.header_image ?? null,
     genres: uniqueStrings(
       (data.genres ?? []).map((genre) => genre.description),
     ),
     modes: getModes(categories),
     developers: uniqueStrings(data.developers ?? []),
     publishers: uniqueStrings(data.publishers ?? []),
+    shortDescription: data.short_description ?? null,
   };
 }
 

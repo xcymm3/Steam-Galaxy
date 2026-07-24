@@ -1,3 +1,5 @@
+import { getSteamGameHeaderImageUrl } from "@/lib/steam/assets";
+
 import { sortOwnedGames } from "./metrics";
 import type { OwnedGame } from "./types";
 
@@ -9,6 +11,7 @@ export type GalaxyGameKind = "planet" | "archive-signal";
 export interface GalaxyGameNode {
   id: string;
   appId: number;
+  coverImageUrl: string;
   game: OwnedGame;
   kind: GalaxyGameKind;
   rank: number;
@@ -88,6 +91,7 @@ export function createGalaxyModel(games: readonly OwnedGame[]): GalaxyModel {
     games: visibleGames.map((game, index) => ({
       id: `game:${game.appId}`,
       appId: game.appId,
+      coverImageUrl: getSteamGameHeaderImageUrl(game.appId),
       game,
       kind: game.playtimeMinutes > 0 ? "planet" : "archive-signal",
       rank: index + 1,

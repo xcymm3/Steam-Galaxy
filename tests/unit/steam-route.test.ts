@@ -133,6 +133,17 @@ describe("POST /api/steam/report", () => {
           totalPlaytimeMinutes: 10_757,
         },
         topGames: [{ appId: 41001 }, { appId: 41002 }, { appId: 41003 }],
+        galaxy: {
+          games: expect.arrayContaining([
+            expect.objectContaining({
+              appId: 41001,
+              coverImageUrl:
+                "https://cdn.cloudflare.steamstatic.com/steam/apps/41001/header.jpg",
+              rank: 1,
+            }),
+          ]),
+          totalGameCount: 3,
+        },
         gameMetadata: {
           requestedGameCount: 3,
           resolvedGameCount: 3,

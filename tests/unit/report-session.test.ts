@@ -56,13 +56,13 @@ describe("report session", () => {
   it("removes corrupted or unsupported report payloads", () => {
     const storage = new MemoryStorage();
 
-    storage.setItem("steam-report:data:v2", "{bad json");
+    storage.setItem("steam-report:data:v3", "{bad json");
     expect(loadReportSession(storage)).toBeNull();
-    expect(storage.getItem("steam-report:data:v2")).toBeNull();
+    expect(storage.getItem("steam-report:data:v3")).toBeNull();
 
     storage.setItem(
-      "steam-report:data:v2",
-      JSON.stringify({ version: 3, report }),
+      "steam-report:data:v3",
+      JSON.stringify({ version: 4, report }),
     );
     expect(loadReportSession(storage)).toBeNull();
   });

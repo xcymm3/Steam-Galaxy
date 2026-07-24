@@ -5,6 +5,7 @@ import type {
 } from "@/lib/steam/types";
 
 import type { GameMetadataProfile } from "./game-metadata";
+import type { GalaxyModel } from "./galaxy";
 
 export type OwnedGame = SteamGame;
 
@@ -54,6 +55,7 @@ export interface ReportData {
   unplayedGames: OwnedGame[];
   lowPlaytimeGames: OwnedGame[];
   gameMetadata: GameMetadataProfile;
+  galaxy: GalaxyModel;
   title: PlayerTitle;
   retrievedAt: string;
   diagnostics: SteamSnapshotDiagnostics;

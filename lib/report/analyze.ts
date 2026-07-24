@@ -5,6 +5,7 @@ import {
   groupOwnedGames,
   sortOwnedGames,
 } from "./metrics";
+import { createGalaxyModel } from "./galaxy";
 import { createEmptyGameMetadataProfile } from "./game-metadata";
 import { selectPlayerTitle } from "./titles";
 import type { ReportData } from "./types";
@@ -29,6 +30,7 @@ export function analyzeSteamSnapshot(snapshot: SteamSnapshot): ReportData {
     unplayedGames,
     lowPlaytimeGames,
     gameMetadata: createEmptyGameMetadataProfile(),
+    galaxy: createGalaxyModel(games),
     title: selectPlayerTitle(metrics, topGames[0] ?? null),
     retrievedAt: snapshot.retrievedAt,
     diagnostics: { ...snapshot.diagnostics },

@@ -30,7 +30,9 @@ describe("Steam Store metadata client", () => {
           genres: [{ description: "解谜" }],
           categories: [{ description: "单人" }, { description: "合作" }],
           developers: ["Valve"],
+          header_image: "https://cdn.example.test/portal-2.jpg",
           publishers: ["Valve"],
+          short_description: "传送门测试。",
         },
       },
       730: {
@@ -40,7 +42,9 @@ describe("Steam Store metadata client", () => {
           genres: [{ description: "动作" }, { description: "免费开玩" }],
           categories: [{ description: "多人" }, { description: "在线 PvP" }],
           developers: ["Valve"],
+          header_image: "https://cdn.example.test/cs2.jpg",
           publishers: ["Valve"],
+          short_description: "反恐精英测试。",
         },
       },
     };
@@ -64,17 +68,21 @@ describe("Steam Store metadata client", () => {
         appId: 730,
         appType: "game",
         genres: ["动作", "免费开玩"],
+        headerImageUrl: "https://cdn.example.test/cs2.jpg",
         modes: ["multiplayer"],
         developers: ["Valve"],
         publishers: ["Valve"],
+        shortDescription: "反恐精英测试。",
       },
       {
         appId: 620,
         appType: "game",
         genres: ["解谜"],
+        headerImageUrl: "https://cdn.example.test/portal-2.jpg",
         modes: ["single-player", "co-op", "multiplayer"],
         developers: ["Valve"],
         publishers: ["Valve"],
+        shortDescription: "传送门测试。",
       },
     ]);
 

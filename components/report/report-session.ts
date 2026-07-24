@@ -1,8 +1,8 @@
 import type { ReportData } from "@/lib/report/types";
 
-const reportStorageKey = "steam-report:data:v2";
+const reportStorageKey = "steam-report:data:v3";
 const progressStorageKey = "steam-report:page:v1";
-const reportStorageVersion = 2;
+const reportStorageVersion = 3;
 
 interface StoredReport {
   version: typeof reportStorageVersion;
@@ -33,6 +33,8 @@ function isReportData(value: unknown): value is ReportData {
     Array.isArray(value.games) &&
     Array.isArray(value.topGames) &&
     isRecord(value.gameMetadata) &&
+    isRecord(value.galaxy) &&
+    Array.isArray(value.galaxy.games) &&
     isRecord(value.title) &&
     typeof value.title.name === "string" &&
     typeof value.retrievedAt === "string"

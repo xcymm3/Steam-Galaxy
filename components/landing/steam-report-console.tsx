@@ -58,6 +58,8 @@ function isSteamLookupResponse(
       Array.isArray(value.data.games) &&
       Array.isArray(value.data.topGames) &&
       isRecord(value.data.gameMetadata) &&
+      isRecord(value.data.galaxy) &&
+      Array.isArray(value.data.galaxy.games) &&
       isRecord(value.data.title)
     );
   }

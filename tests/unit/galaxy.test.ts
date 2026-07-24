@@ -28,7 +28,12 @@ describe("galaxy model", () => {
 
     expect(model.totalGameCount).toBe(500);
     expect(model.games).toHaveLength(GALAXY_INTERACTIVE_GAME_LIMIT);
-    expect(model.games[0]).toMatchObject({ appId: 9_000, rank: 1 });
+    expect(model.games[0]).toMatchObject({
+      appId: 9_000,
+      coverImageUrl:
+        "https://cdn.cloudflare.steamstatic.com/steam/apps/9000/header.jpg",
+      rank: 1,
+    });
     expect(model.games.at(-1)).toMatchObject({ appId: 9_099, rank: 100 });
     expect(model.longTail).toMatchObject({
       id: "aggregate:long-tail",
