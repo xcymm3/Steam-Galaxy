@@ -98,6 +98,28 @@ describe("GalaxyWorkbench", () => {
     expect(await screen.findByText("当前显示 6 / 6 颗可探索星体")).toBeTruthy();
   });
 
+  it("provides a keyboard-accessible navigator for every explorable star", async () => {
+    const user = userEvent.setup();
+
+    render(<GalaxyWorkbench report={report} />);
+
+    const navigator = screen.getByRole("combobox", { name: "键盘定位星体" });
+    const options = screen.getAllByRole("option");
+
+    expect(options).toHaveLength(7);
+    expect(options[1]?.textContent).toContain("Main Sequence");
+
+    await user.selectOptions(navigator, options[1]!.getAttribute("value")!);
+    expect(
+      screen.getByRole("region", { name: "Main Sequence 的游戏档案" }),
+    ).toBeTruthy();
+
+    await user.selectOptions(navigator, "");
+    expect(
+      screen.queryByRole("region", { name: "Main Sequence 的游戏档案" }),
+    ).toBeNull();
+  });
+
   it("collapses the filter dock by default on compact screens", async () => {
     vi.stubGlobal(
       "matchMedia",

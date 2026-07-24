@@ -526,9 +526,12 @@ export function StarMap({
   const selectedBody =
     galaxyScene.bodies.find((body) => body.node.id === selectedId) ?? null;
   const selectedNode = selectedBody?.node ?? null;
+  const selectGame = (nodeId: string | null) => {
+    setSelectedId(nodeId);
+    focusControllerRef.current(nodeId);
+  };
   const resetOverview = () => {
-    focusControllerRef.current(null);
-    setSelectedId(null);
+    selectGame(null);
   };
 
   const requestMetadata = useCallback((appId: number, force = false) => {
@@ -605,7 +608,7 @@ export function StarMap({
     );
     canvas.setAttribute(
       "aria-describedby",
-      "star-map-hint star-map-volume-note",
+      "star-map-hint star-map-volume-note star-map-navigator-help",
     );
     mount.replaceChildren(canvas);
 
@@ -840,9 +843,16 @@ export function StarMap({
     };
 
     focusControllerRef.current = (nodeId) => {
-      const body = nodeId ? (bodyById.get(nodeId) ?? null) : null;
+      if (!nodeId) {
+        applyFocus(null);
+        return;
+      }
 
-      applyFocus(body);
+      const body = bodyById.get(nodeId);
+
+      if (body) {
+        selectPlanet(body.node);
+      }
     };
 
     const animate = () => {
@@ -996,6 +1006,17 @@ export function StarMap({
     };
   }, [galaxyScene, requestMetadata]);
 
+  useEffect(() => {
+    if (selectedId && !galaxy.games.some((node) => node.id === selectedId)) {
+      const resetFrame = window.requestAnimationFrame(() => {
+        focusControllerRef.current(null);
+        setSelectedId(null);
+      });
+
+      return () => window.cancelAnimationFrame(resetFrame);
+    }
+  }, [galaxy.games, selectedId]);
+
   if (galaxy.games.length === 0) {
     return (
       <p className={styles.starMapMessage} role="status">
@@ -1014,7 +1035,7 @@ export function StarMap({
           className={styles.starMapCanvas}
           role="group"
           aria-label={mapLabel}
-          aria-describedby="star-map-hint star-map-volume-note"
+          aria-describedby="star-map-hint star-map-volume-note star-map-navigator-help"
         >
           {renderUnavailable && (
             <p className={styles.starMapFallback} role="status">
@@ -1047,6 +1068,25 @@ export function StarMap({
         已游玩星球的半径按累计时长的立方根计算：1000 小时的星球体积是 100 小时的
         10 倍；0 小时游戏显示为档案信标。
       </p>
+      <div className={styles.starMapNavigator}>
+        <label htmlFor="star-map-navigator">键盘定位星体</label>
+        <select
+          id="star-map-navigator"
+          value={selectedId ?? ""}
+          onChange={(event) => selectGame(event.target.value || null)}
+        >
+          <option value="">选择一颗可探索星体…</option>
+          {galaxy.games.map((node) => (
+            <option key={node.id} value={node.id}>
+              #{node.rank} · {node.game.name} ·{" "}
+              {formatHours(node.game.playtimeMinutes)} 小时
+            </option>
+          ))}
+        </select>
+        <p id="star-map-navigator-help" className={styles.starMapNavigatorHelp}>
+          可用键盘或读屏软件展开此列表，选择星体后会聚焦并打开对应游戏档案。
+        </p>
+      </div>
     </figure>
   );
 }

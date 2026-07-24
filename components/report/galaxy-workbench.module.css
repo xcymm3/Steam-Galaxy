@@ -764,6 +764,53 @@
   color: var(--color-story-muted);
 }
 
+.starMapNavigator {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+  margin-top: var(--space-3);
+}
+
+.starMapNavigator label {
+  color: var(--color-story-muted);
+  font-family: var(--font-story-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-label);
+}
+
+.starMapNavigator select {
+  width: 100%;
+  min-height: var(--control-min);
+  padding-inline: var(--space-3);
+  border: var(--rule-hair) solid var(--color-story-rule-strong);
+  outline: var(--rule-focus) solid transparent;
+  outline-offset: var(--rule-focus-offset);
+  background: var(--color-story-surface);
+  color: var(--color-story-ink);
+  font: inherit;
+  font-size: var(--text-sm);
+}
+
+.starMapNavigator select:focus-visible {
+  outline-color: var(--color-story-focus);
+}
+
+.starMapNavigator select:active {
+  background: var(--color-story-surface-raised);
+}
+
+.starMapNavigator select:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.starMapNavigatorHelp {
+  margin: 0;
+  color: var(--color-story-faint);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
 @keyframes telemetry-enter {
   from {
     opacity: 0;
@@ -786,6 +833,7 @@
   .starMapStoreLink:hover,
   .starMapTelemetryReset:hover,
   .starMapMetadataRetry:hover,
+  .starMapNavigator select:hover:not(:disabled),
   .filterButton:hover:not([aria-pressed="true"]),
   .filterReset:hover:not(:disabled) {
     background: var(--color-story-surface-raised);
