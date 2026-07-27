@@ -37,6 +37,10 @@ import {
   getGalaxyFocusDistance,
   type GalaxySceneBody,
 } from "@/lib/report/galaxy-scene";
+import {
+  loadSteamImagePalette,
+  type SteamImagePalette,
+} from "@/lib/report/steam-image-palette";
 import { fetchSteamStoreMetadata } from "@/lib/steam/store-metadata-api";
 import type { SteamStoreGameMetadata } from "@/lib/steam/store-metadata";
 
@@ -69,6 +73,18 @@ interface ThemeColors {
   rust: string;
   rule: Color;
 }
+
+type PaletteTarget =
+  | {
+      material: MeshStandardMaterial;
+      kind: "core";
+    }
+  | {
+      index: number;
+      kind: "planet";
+      mesh: InstancedMesh;
+      paletteIndex: number;
+    };
 
 const fullTurn = Math.PI * 2;
 const canvasTextureWidth = 256;
@@ -434,7 +450,12 @@ export function StarMap({
 }: StarMapProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const focusControllerRef = useRef<() => void>(() => {});
+  const paletteControllerRef = useRef<
+    (appId: number, palette: SteamImagePalette) => void
+  >(() => {});
   const metadataByAppIdRef = useRef(gameMetadataByAppId);
+  const paletteByAppIdRef = useRef(new Map<number, SteamImagePalette>());
+  const paletteRequestedAppIdsRef = useRef(new Set<number>());
   const requestedAppIdsRef = useRef(new Set(Object.keys(gameMetadataByAppId)));
   const galaxyScene = useMemo(() => createGalaxyScene(galaxy), [galaxy]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -489,6 +510,35 @@ export function StarMap({
       }));
     });
   }, []);
+
+  useEffect(() => {
+    const coverImageUrlByAppId = new Map(
+      galaxy.games.map((node) => [node.appId, node.coverImageUrl]),
+    );
+
+    Object.values(loadedMetadataByAppId).forEach((metadata) => {
+      if (paletteRequestedAppIdsRef.current.has(metadata.appId)) {
+        return;
+      }
+
+      const imageUrl =
+        metadata.headerImageUrl ?? coverImageUrlByAppId.get(metadata.appId);
+
+      if (!imageUrl) {
+        return;
+      }
+
+      paletteRequestedAppIdsRef.current.add(metadata.appId);
+      void loadSteamImagePalette(imageUrl).then((palette) => {
+        if (!palette) {
+          return;
+        }
+
+        paletteByAppIdRef.current.set(metadata.appId, palette);
+        paletteControllerRef.current(metadata.appId, palette);
+      });
+    });
+  }, [galaxy.games, loadedMetadataByAppId]);
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -593,6 +643,28 @@ export function StarMap({
       ringGeometry,
       field.geometry,
     ];
+    const paletteTargets = new Map<number, PaletteTarget>();
+    const applyPalette = (appId: number, palette: SteamImagePalette) => {
+      const target = paletteTargets.get(appId);
+
+      if (!target) {
+        return;
+      }
+
+      if (target.kind === "core") {
+        target.material.color.set(palette.primary);
+        target.material.emissive.set(palette.accent);
+        return;
+      }
+
+      const swatches = [palette.primary, palette.secondary, palette.accent];
+      const swatch =
+        swatches[target.paletteIndex % swatches.length] ?? palette.primary;
+      target.mesh.setColorAt(target.index, new Color(swatch));
+      if (target.mesh.instanceColor) {
+        target.mesh.instanceColor.needsUpdate = true;
+      }
+    };
 
     const selectPlanet = (node: GalaxyGameNode) => {
       const body = bodyById.get(node.id);
@@ -626,6 +698,10 @@ export function StarMap({
       coreMesh.name = coreBody.node.game.name;
       scene.add(coreMesh);
       pickable.push(coreMesh);
+      paletteTargets.set(coreBody.node.appId, {
+        kind: "core",
+        material: coreMaterial,
+      });
       disposableTextures.push(starTexture);
       disposableMaterials.push(coreMaterial);
     }
@@ -640,6 +716,7 @@ export function StarMap({
         map: texture,
         metalness: 0.04,
         roughness: 0.78,
+        vertexColors: true,
       });
       const mesh = new InstancedMesh(sphereGeometry, material, bodies.length);
       mesh.userData.bodies = bodies;
@@ -647,9 +724,22 @@ export function StarMap({
       assignBodyMatrices(mesh, bodies);
       scene.add(mesh);
       pickable.push(mesh);
+      bodies.forEach((body, index) => {
+        paletteTargets.set(body.node.appId, {
+          index,
+          kind: "planet",
+          mesh,
+          paletteIndex: body.textureVariant,
+        });
+      });
       disposableTextures.push(texture);
       disposableMaterials.push(material);
     });
+
+    paletteByAppIdRef.current.forEach((palette, appId) => {
+      applyPalette(appId, palette);
+    });
+    paletteControllerRef.current = applyPalette;
 
     const occupiedOrbits = new Set<number>();
     galaxyScene.bodies.forEach((body) => {
@@ -876,6 +966,7 @@ export function StarMap({
       window.cancelAnimationFrame(animationFrame);
       controls.dispose();
       focusControllerRef.current = () => {};
+      paletteControllerRef.current = () => {};
       disposableTextures.forEach((texture) => texture.dispose());
       disposableMaterials.forEach((material) => material.dispose());
       disposableGeometries.forEach((geometry) => geometry.dispose());
