@@ -46,7 +46,7 @@ describe("GalaxyGamePanel", () => {
     expect(
       (
         screen.getByRole("img", {
-          name: "Archive Runner 的 Steam 封面",
+          name: "Archive Runner 的 Steam 宣传图",
         }) as HTMLImageElement
       ).src,
     ).toBe("https://cdn.example.com/archive-runner.jpg");
@@ -64,7 +64,7 @@ describe("GalaxyGamePanel", () => {
     expect(onReset).toHaveBeenCalledTimes(2);
   });
 
-  it("shows a compact fallback type and uses a cover fallback after the image fails", () => {
+  it("shows a compact fallback type when Store metadata is unavailable", () => {
     render(
       <GalaxyGamePanel
         body={body}
@@ -75,15 +75,5 @@ describe("GalaxyGamePanel", () => {
     );
 
     expect(screen.getByText("暂无类型")).toBeTruthy();
-
-    const cover = screen.getByRole("img", {
-      name: "Archive Runner 的 Steam 封面",
-    }) as HTMLImageElement;
-    fireEvent.error(cover);
-    expect(
-      screen.getByRole("img", {
-        name: "Archive Runner 的 Steam 封面不可用",
-      }),
-    ).toBeTruthy();
   });
 });

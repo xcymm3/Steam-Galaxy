@@ -377,13 +377,13 @@ export function GalaxyGamePanel({
           ×
         </button>
       </div>
-      {coverImageUrl ? (
+      {coverImageUrl && (
         /* The URL is runtime Steam data, so it intentionally bypasses a static image allowlist. */
         /* eslint-disable-next-line @next/next/no-img-element */
         <img
-          className={styles.starMapTelemetryCover}
+          className={styles.starMapTelemetryBackdrop}
           src={coverImageUrl}
-          alt={`${node.game.name} 的 Steam 封面`}
+          alt={`${node.game.name} 的 Steam 宣传图`}
           onError={() => {
             setFailedCoverImageUrls((failedUrls) =>
               failedUrls.includes(coverImageUrl)
@@ -392,14 +392,6 @@ export function GalaxyGamePanel({
             );
           }}
         />
-      ) : (
-        <div
-          className={styles.starMapTelemetryCoverFallback}
-          role="img"
-          aria-label={`${node.game.name} 的 Steam 封面不可用`}
-        >
-          STEAM / APP {node.appId}
-        </div>
       )}
       <div className={styles.starMapTelemetryPrimary}>
         <h3>{node.game.name}</h3>
