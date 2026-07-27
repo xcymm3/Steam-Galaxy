@@ -467,6 +467,13 @@ export function GalaxyGamePanel({
         </div>
       )}
       <div className={styles.starMapTelemetryActions}>
+        <button
+          className={styles.starMapOverviewButton}
+          type="button"
+          onClick={onReset}
+        >
+          返回全景
+        </button>
         <a
           className={styles.starMapStoreLink}
           href={`https://store.steampowered.com/app/${node.appId}/`}
@@ -749,7 +756,7 @@ export function StarMap({
         .crossVectors(screenRight, viewDirection)
         .normalize();
       const target = body
-        ? bodyTarget.clone().sub(screenUp.multiplyScalar(distance * 0.28))
+        ? bodyTarget.clone().sub(screenUp.multiplyScalar(distance * 0.36))
         : bodyTarget;
       const cameraPosition = target
         .clone()

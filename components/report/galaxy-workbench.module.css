@@ -422,11 +422,9 @@
   display: grid;
   align-content: start;
   min-width: 0;
-  width: min(15rem, calc(100% - var(--space-6)));
-  max-block-size: min(17.5rem, calc(100% - var(--space-6)));
+  width: min(24rem, calc(100% - var(--space-6)));
   padding: var(--space-3);
-  overflow: auto;
-  scrollbar-width: none;
+  overflow: visible;
   isolation: isolate;
   translate: -50% 0;
   border-color: color-mix(
@@ -444,10 +442,6 @@
   -webkit-backdrop-filter: blur(0.85rem);
   box-shadow: var(--shadow-story-orbit);
   animation-name: telemetry-bottom-enter;
-}
-
-.starMapStageSelected .starMapTelemetry::-webkit-scrollbar {
-  display: none;
 }
 
 .starMapStageSelected .starMapTelemetry::before {
@@ -726,6 +720,7 @@
   gap: var(--space-3);
 }
 
+.starMapOverviewButton,
 .starMapStoreLink {
   display: inline-grid;
   flex: 1 1 0;
@@ -740,10 +735,18 @@
   font-size: var(--text-sm);
   font-weight: 700;
   line-height: 1;
+}
+
+.starMapOverviewButton {
+  cursor: pointer;
+}
+
+.starMapStoreLink {
   text-decoration: none;
 }
 
 .starMapStoreLink:focus-visible,
+.starMapOverviewButton:focus-visible,
 .starMapTelemetryClose:focus-visible,
 .starMapMetadataRetry:focus-visible {
   outline: var(--rule-focus) solid var(--color-story-focus);
@@ -775,6 +778,7 @@
   }
 
   .starMapStoreLink:hover,
+  .starMapOverviewButton:hover,
   .starMapTelemetryClose:hover,
   .starMapMetadataRetry:hover,
   .filterButton:hover:not([aria-pressed="true"]),
@@ -791,6 +795,7 @@
 
 @media (pointer: coarse) {
   .starMapStoreLink,
+  .starMapOverviewButton,
   .starMapTelemetryClose {
     min-height: 3rem;
   }
@@ -836,6 +841,7 @@
   }
 
   .starMapStoreLink:hover,
+  .starMapOverviewButton:hover,
   .starMapTelemetryClose:hover,
   .starMapMetadataRetry:hover,
   .filterButton:hover,
