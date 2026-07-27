@@ -724,7 +724,9 @@ export function StarMap({
       assignBodyMatrices(mesh, bodies);
       scene.add(mesh);
       pickable.push(mesh);
+      const neutralTint = new Color(1, 1, 1);
       bodies.forEach((body, index) => {
+        mesh.setColorAt(index, neutralTint);
         paletteTargets.set(body.node.appId, {
           index,
           kind: "planet",
@@ -732,6 +734,9 @@ export function StarMap({
           paletteIndex: body.textureVariant,
         });
       });
+      if (mesh.instanceColor) {
+        mesh.instanceColor.needsUpdate = true;
+      }
       disposableTextures.push(texture);
       disposableMaterials.push(material);
     });
