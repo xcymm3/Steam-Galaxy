@@ -62,14 +62,18 @@ export interface GalaxyGamePanelProps {
 interface ThemeColors {
   accent: Color;
   continent: string;
+  gasColor: Color;
   gas: string;
+  iceColor: Color;
   ice: string;
   ink: Color;
   inkCss: string;
   muted: Color;
+  oceanColor: Color;
   ocean: string;
   paper: Color;
   paperCss: string;
+  rustColor: Color;
   rust: string;
   rule: Color;
 }
@@ -90,6 +94,8 @@ const fullTurn = Math.PI * 2;
 const canvasTextureWidth = 256;
 const canvasTextureHeight = 128;
 const textureVariantCount = 4;
+const bodyEmissionIntensity = 0.22;
+const planetSurfaceKinds = ["ocean", "rust", "ice", "gas"] as const;
 
 function formatHours(minutes: number) {
   return (minutes / 60).toLocaleString("zh-CN", {
@@ -149,14 +155,18 @@ function getThemeColors(canvas: HTMLCanvasElement): ThemeColors {
   return {
     accent: getTokenColor(canvas, "--color-story-accent"),
     continent: getTokenValue(canvas, "--color-story-continent"),
+    gasColor: getTokenColor(canvas, "--color-story-gas"),
     gas: getTokenValue(canvas, "--color-story-gas"),
+    iceColor: getTokenColor(canvas, "--color-story-ice"),
     ice: getTokenValue(canvas, "--color-story-ice"),
     ink: getTokenColor(canvas, "--color-story-ink"),
     inkCss: getTokenValue(canvas, "--color-story-ink"),
     muted: getTokenColor(canvas, "--color-story-muted"),
+    oceanColor: getTokenColor(canvas, "--color-story-ocean"),
     ocean: getTokenValue(canvas, "--color-story-ocean"),
     paper: getTokenColor(canvas, "--color-story-paper"),
     paperCss: getTokenValue(canvas, "--color-story-paper"),
+    rustColor: getTokenColor(canvas, "--color-story-rust"),
     rust: getTokenValue(canvas, "--color-story-rust"),
     rule: getTokenColor(canvas, "--color-story-rule"),
   };
@@ -167,6 +177,33 @@ function createTextureCanvas() {
   canvas.width = canvasTextureWidth;
   canvas.height = canvasTextureHeight;
   return canvas;
+}
+
+type PlanetSurfaceKind = "gas" | "ice" | "ocean" | "rust" | "star";
+
+function getPlanetSurfaceKind(variant: "star" | number): PlanetSurfaceKind {
+  return variant === "star"
+    ? "star"
+    : (planetSurfaceKinds[variant % textureVariantCount] ?? "ocean");
+}
+
+function getSurfaceEmissionColor(
+  surfaceKind: PlanetSurfaceKind,
+  colors: ThemeColors,
+) {
+  if (surfaceKind === "rust") {
+    return colors.rustColor;
+  }
+
+  if (surfaceKind === "ice") {
+    return colors.iceColor;
+  }
+
+  if (surfaceKind === "gas") {
+    return colors.gasColor;
+  }
+
+  return surfaceKind === "star" ? colors.accent : colors.oceanColor;
 }
 
 function createPlanetTexture(
@@ -181,11 +218,7 @@ function createPlanetTexture(
   }
 
   const random = createRandom(`galaxy-texture:${variant}`);
-  const surfaceKind =
-    variant === "star"
-      ? "star"
-      : (["ocean", "rust", "ice", "gas"][variant % textureVariantCount] ??
-        "ocean");
+  const surfaceKind = getPlanetSurfaceKind(variant);
   const base =
     surfaceKind === "rust"
       ? colors.rust
@@ -646,7 +679,7 @@ export function StarMap({
 
       if (target.kind === "core") {
         target.material.color.set(palette.primary);
-        target.material.emissive.set(palette.accent);
+        target.material.emissive.set(palette.primary);
         return;
       }
 
@@ -675,7 +708,7 @@ export function StarMap({
       const starTexture = createPlanetTexture("star", colors);
       const coreMaterial = new MeshStandardMaterial({
         emissive: colors.accent,
-        emissiveIntensity: 1.4,
+        emissiveIntensity: bodyEmissionIntensity,
         map: starTexture,
         metalness: 0.03,
         roughness: 0.45,
@@ -704,8 +737,11 @@ export function StarMap({
     textureGroups.forEach((bodies, textureVariant) => {
       const texture = createPlanetTexture(textureVariant, colors);
       const material = new MeshStandardMaterial({
-        emissive: colors.paper,
-        emissiveIntensity: 0.035,
+        emissive: getSurfaceEmissionColor(
+          getPlanetSurfaceKind(textureVariant),
+          colors,
+        ),
+        emissiveIntensity: bodyEmissionIntensity,
         map: texture,
         metalness: 0.04,
         roughness: 0.78,
