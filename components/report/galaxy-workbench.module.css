@@ -410,26 +410,78 @@
 }
 
 .starMapStageSelected {
-  display: grid;
-  grid-template-columns: minmax(0, 0.56fr) minmax(10.75rem, 1fr);
-  gap: var(--space-2);
   background: var(--color-story-paper);
 }
 
 .starMapStageSelected .starMapTelemetry {
-  position: relative;
-  inset: auto;
+  position: absolute;
+  inset-block-start: auto;
+  inset-block-end: var(--space-3);
+  inset-inline-start: auto;
+  inset-inline-end: var(--space-3);
   display: grid;
   align-content: start;
   min-width: 0;
-  min-height: 0;
-  max-block-size: none;
+  width: min(14.5rem, calc(100% - var(--space-6)));
+  max-block-size: min(21rem, calc(100% - var(--space-6)));
   padding: var(--space-3);
-  overflow: clip;
-  border-color: var(--color-story-rule-strong);
+  overflow: auto;
+  scrollbar-width: none;
+  isolation: isolate;
+  border-color: color-mix(
+    in oklch,
+    var(--color-story-rule-strong),
+    transparent 22%
+  );
   border-inline-start: 0.1875rem solid var(--color-story-accent);
-  background: var(--color-story-surface-raised);
+  background: color-mix(
+    in oklch,
+    var(--color-story-surface-raised),
+    transparent 30%
+  );
+  backdrop-filter: blur(0.85rem);
+  -webkit-backdrop-filter: blur(0.85rem);
   box-shadow: var(--shadow-story-orbit);
+  animation-name: telemetry-side-enter;
+}
+
+.starMapStageSelected .starMapTelemetry::-webkit-scrollbar {
+  display: none;
+}
+
+.starMapStageSelected .starMapTelemetry::before {
+  position: absolute;
+  inset: var(--space-1);
+  z-index: 0;
+  content: "";
+  border: var(--rule-hair) solid var(--color-story-accent);
+  clip-path: polygon(
+    0.75rem 0,
+    calc(100% - 0.75rem) 0,
+    100% 0.75rem,
+    100% calc(100% - 0.75rem),
+    calc(100% - 0.75rem) 100%,
+    0.75rem 100%,
+    0 calc(100% - 0.75rem),
+    0 0.75rem
+  );
+  opacity: 0.82;
+}
+
+.starMapStageSelected .starMapTelemetry::after {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 34%;
+  z-index: 1;
+  width: 32%;
+  height: var(--rule-focus);
+  content: "";
+  background: var(--color-story-accent);
+}
+
+.starMapStageSelected .starMapTelemetry > * {
+  position: relative;
+  z-index: 1;
 }
 
 .starMapCanvas {
@@ -485,6 +537,18 @@
   background: var(--color-story-surface);
   box-shadow: var(--shadow-story-orbit);
   animation: telemetry-enter var(--dur-short) var(--ease-out) both;
+}
+
+@keyframes telemetry-side-enter {
+  from {
+    opacity: 0;
+    transform: translateX(var(--space-4));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .starMapTelemetryHead,

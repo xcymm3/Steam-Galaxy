@@ -727,7 +727,7 @@ export function StarMap({
       isFocused = body !== null;
       selectedRing.visible = body !== null;
 
-      const target = body
+      const bodyTarget = body
         ? new Vector3(body.position.x, body.position.y, body.position.z)
         : overviewTarget.clone();
       const relativeCameraPosition = camera.position
@@ -740,12 +740,19 @@ export function StarMap({
       const distance = body
         ? getGalaxyFocusDistance(galaxyScene, body)
         : overviewCameraPosition.distanceTo(overviewTarget);
+      const viewDirection = direction.clone().negate();
+      const screenRight = new Vector3()
+        .crossVectors(viewDirection, new Vector3(0, 1, 0))
+        .normalize();
+      const target = body
+        ? bodyTarget.clone().add(screenRight.multiplyScalar(distance * 0.24))
+        : bodyTarget;
       const cameraPosition = target
         .clone()
         .add(direction.multiplyScalar(distance));
 
       if (body) {
-        selectedRing.position.copy(target);
+        selectedRing.position.copy(bodyTarget);
         selectedRing.scale.setScalar(Math.max(0.5, body.radius * 1.42));
       }
 
