@@ -20,14 +20,6 @@ export default async function Home({ searchParams }: HomePageProps) {
 
   return (
     <div className="landingPage">
-      <header className="siteHeader">
-        <nav className="siteNav" aria-label="主导航">
-          <a className="brand" href="#top" aria-label="Steam Galaxy">
-            STEAM GALAXY
-          </a>
-        </nav>
-      </header>
-
       <main id="top" className="pageShell">
         <section className="hero" aria-labelledby="page-title">
           <div className="heroCopy">

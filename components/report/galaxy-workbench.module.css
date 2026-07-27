@@ -66,7 +66,6 @@
 }
 
 .recoveryLink:focus-visible,
-.wordmark:focus-visible,
 .changeLibraryLink:focus-visible {
   outline: var(--rule-focus) solid var(--color-story-focus);
   outline-offset: var(--rule-focus-offset);
@@ -74,7 +73,7 @@
 
 .workbenchRoot {
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   gap: var(--space-2);
   width: 100%;
   height: 100dvh;
@@ -88,22 +87,12 @@
   font-family: var(--font-story-body);
 }
 
-.workbenchHeader,
 .workbenchIntro,
 .workbenchContent {
   width: min(100%, var(--layout-story-max));
   margin-inline: auto;
 }
 
-.workbenchHeader {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-3);
-  min-height: var(--control-min);
-}
-
-.wordmark,
 .changeLibraryLink {
   display: inline-flex;
   align-items: center;
@@ -111,30 +100,6 @@
   color: var(--color-story-ink);
   line-height: 1;
   white-space: nowrap;
-}
-
-.wordmark {
-  font-family: var(--font-story-wordmark);
-  font-size: var(--text-sm);
-  font-weight: 700;
-  letter-spacing: var(--tracking-label);
-}
-
-.playerIdentity {
-  min-width: 0;
-  text-align: center;
-}
-
-.playerIdentity strong {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.playerIdentity strong {
-  color: var(--color-story-muted);
-  font-size: var(--text-xs);
 }
 
 .changeLibraryLink {
@@ -151,7 +116,16 @@
   margin: 0;
 }
 
+.introTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
 .workbenchIntro h1 {
+  min-width: 0;
   max-width: none;
   margin: 0;
   font-size: clamp(1.5rem, 6vw, 2.25rem);
@@ -701,7 +675,6 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .wordmark:hover,
   .changeLibraryLink:hover {
     opacity: 0.72;
   }

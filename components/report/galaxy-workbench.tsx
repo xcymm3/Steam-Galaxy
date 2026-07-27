@@ -89,21 +89,12 @@ export function GalaxyWorkbench({ report }: GalaxyWorkbenchProps) {
 
   return (
     <main className={styles.workbenchRoot}>
-      <header className={styles.workbenchHeader}>
-        <Link className={styles.wordmark} href="/" aria-label="返回首页">
-          STEAM GALAXY
-        </Link>
-        <div className={styles.playerIdentity}>
-          <strong>{player.displayName}</strong>
-        </div>
-        <Link className={styles.changeLibraryLink} href="/">
-          换个库存
-        </Link>
-      </header>
-
       <section className={styles.workbenchIntro} aria-labelledby="galaxy-title">
-        <div>
+        <div className={styles.introTitleRow}>
           <h1 id="galaxy-title">{player.displayName} 的游戏星系</h1>
+          <Link className={styles.changeLibraryLink} href="/">
+            换个库存
+          </Link>
         </div>
         <dl className={styles.summaryMetrics} aria-label="星系概览">
           <div>
