@@ -57,11 +57,8 @@ describe("GalaxyGamePanel", () => {
       screen.getByRole("link", { name: "Steam 商店" }).getAttribute("href"),
     ).toBe("https://store.steampowered.com/app/424242/");
 
-    fireEvent.click(screen.getByRole("button", { name: "返回全景" }));
-    expect(onReset).toHaveBeenCalledOnce();
-
     fireEvent.click(screen.getByRole("button", { name: "关闭星体档案" }));
-    expect(onReset).toHaveBeenCalledTimes(2);
+    expect(onReset).toHaveBeenCalledOnce();
   });
 
   it("shows a compact fallback type when Store metadata is unavailable", () => {

@@ -423,13 +423,6 @@ export function GalaxyGamePanel({
         </dl>
       </div>
       <div className={styles.starMapTelemetryActions}>
-        <button
-          className={styles.starMapOverviewButton}
-          type="button"
-          onClick={onReset}
-        >
-          返回全景
-        </button>
         <a
           className={styles.starMapStoreLink}
           href={`https://store.steampowered.com/app/${node.appId}/`}
@@ -716,7 +709,6 @@ export function StarMap({
         map: texture,
         metalness: 0.04,
         roughness: 0.78,
-        vertexColors: true,
       });
       const mesh = new InstancedMesh(sphereGeometry, material, bodies.length);
       mesh.userData.bodies = bodies;

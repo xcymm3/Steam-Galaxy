@@ -656,7 +656,6 @@
   gap: var(--space-3);
 }
 
-.starMapOverviewButton,
 .starMapStoreLink {
   display: inline-grid;
   flex: 1 1 0;
@@ -673,16 +672,11 @@
   line-height: 1;
 }
 
-.starMapOverviewButton {
-  cursor: pointer;
-}
-
 .starMapStoreLink {
   text-decoration: none;
 }
 
 .starMapStoreLink:focus-visible,
-.starMapOverviewButton:focus-visible,
 .starMapTelemetryClose:focus-visible {
   outline: var(--rule-focus) solid var(--color-story-focus);
   outline-offset: var(--rule-focus-offset);
@@ -713,7 +707,6 @@
   }
 
   .starMapStoreLink:hover,
-  .starMapOverviewButton:hover,
   .starMapTelemetryClose:hover,
   .filterButton:hover:not([aria-pressed="true"]),
   .filterReset:hover:not(:disabled) {
@@ -729,7 +722,6 @@
 
 @media (pointer: coarse) {
   .starMapStoreLink,
-  .starMapOverviewButton,
   .starMapTelemetryClose {
     min-height: 3rem;
   }
@@ -775,7 +767,6 @@
   }
 
   .starMapStoreLink:hover,
-  .starMapOverviewButton:hover,
   .starMapTelemetryClose:hover,
   .filterButton:hover,
   .filterReset:hover,
