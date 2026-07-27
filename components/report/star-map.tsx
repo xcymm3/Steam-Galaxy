@@ -94,7 +94,7 @@ const fullTurn = Math.PI * 2;
 const canvasTextureWidth = 256;
 const canvasTextureHeight = 128;
 const textureVariantCount = 4;
-const bodyEmissionIntensity = 0.22;
+const bodyEmissionIntensity = 0.11;
 const planetSurfaceKinds = ["ocean", "rust", "ice", "gas"] as const;
 
 function formatHours(minutes: number) {
