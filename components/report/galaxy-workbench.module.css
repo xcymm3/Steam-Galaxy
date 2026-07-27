@@ -417,17 +417,18 @@
   position: absolute;
   inset-block-start: auto;
   inset-block-end: var(--space-3);
-  inset-inline-start: auto;
-  inset-inline-end: var(--space-3);
+  inset-inline-start: 50%;
+  inset-inline-end: auto;
   display: grid;
   align-content: start;
   min-width: 0;
-  width: min(14.5rem, calc(100% - var(--space-6)));
-  max-block-size: min(21rem, calc(100% - var(--space-6)));
+  width: min(15rem, calc(100% - var(--space-6)));
+  max-block-size: min(17.5rem, calc(100% - var(--space-6)));
   padding: var(--space-3);
   overflow: auto;
   scrollbar-width: none;
   isolation: isolate;
+  translate: -50% 0;
   border-color: color-mix(
     in oklch,
     var(--color-story-rule-strong),
@@ -442,7 +443,7 @@
   backdrop-filter: blur(0.85rem);
   -webkit-backdrop-filter: blur(0.85rem);
   box-shadow: var(--shadow-story-orbit);
-  animation-name: telemetry-side-enter;
+  animation-name: telemetry-bottom-enter;
 }
 
 .starMapStageSelected .starMapTelemetry::-webkit-scrollbar {
@@ -539,15 +540,15 @@
   animation: telemetry-enter var(--dur-short) var(--ease-out) both;
 }
 
-@keyframes telemetry-side-enter {
+@keyframes telemetry-bottom-enter {
   from {
     opacity: 0;
-    transform: translateX(var(--space-4));
+    transform: translateY(var(--space-4));
   }
 
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
   }
 }
 

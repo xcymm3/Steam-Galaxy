@@ -354,6 +354,7 @@ export function GalaxyGamePanel({
   onReset,
 }: GalaxyGamePanelProps) {
   const { node } = body;
+  const bodyKindLabel = body.isCore ? "恒星" : "行星";
   const [failedCoverImageUrls, setFailedCoverImageUrls] = useState<string[]>(
     [],
   );
@@ -382,11 +383,11 @@ export function GalaxyGamePanel({
     <section
       id="star-map-selection"
       className={styles.starMapTelemetry}
-      aria-label={`${node.game.name} 的游戏档案`}
+      aria-label={`${node.game.name} 的${bodyKindLabel}档案`}
       aria-live="polite"
     >
       <div className={styles.starMapTelemetryHead}>
-        <p>星体档案</p>
+        <p>{bodyKindLabel}档案</p>
         <span>#{node.rank}</span>
         <button
           className={styles.starMapTelemetryClose}
@@ -744,8 +745,11 @@ export function StarMap({
       const screenRight = new Vector3()
         .crossVectors(viewDirection, new Vector3(0, 1, 0))
         .normalize();
+      const screenUp = new Vector3()
+        .crossVectors(screenRight, viewDirection)
+        .normalize();
       const target = body
-        ? bodyTarget.clone().add(screenRight.multiplyScalar(distance * 0.24))
+        ? bodyTarget.clone().sub(screenUp.multiplyScalar(distance * 0.28))
         : bodyTarget;
       const cameraPosition = target
         .clone()
@@ -961,7 +965,7 @@ export function StarMap({
     );
   }
 
-  const mapLabel = `Three.js Steam 星系，展示时长最高的 ${galaxy.games.length} 款游戏；所有游戏均显示为可选择星球，星球体积按游玩时长映射。`;
+  const mapLabel = `Three.js Steam 星系，展示时长最高的 ${galaxy.games.length} 款游戏；时长最高的游戏显示为恒星，其余游戏显示为可选择行星，星体体积按游玩时长映射。`;
 
   return (
     <figure className={styles.starMapFigure}>

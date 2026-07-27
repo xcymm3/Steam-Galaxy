@@ -51,6 +51,7 @@ describe("GalaxyGamePanel", () => {
       ).src,
     ).toBe("https://cdn.example.com/archive-runner.jpg");
     expect(screen.getByText("150 小时")).toBeTruthy();
+    expect(screen.getByText("恒星档案")).toBeTruthy();
     expect(screen.getByText("Action / Adventure")).toBeTruthy();
     expect(screen.getByText("单人 / 多人")).toBeTruthy();
     expect(screen.getByText("Orbit Works")).toBeTruthy();
