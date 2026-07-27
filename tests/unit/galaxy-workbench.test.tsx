@@ -88,7 +88,7 @@ describe("GalaxyWorkbench", () => {
     await user.click(screen.getByRole("button", { name: "2 小时内" }));
     expect(await screen.findByText("3 / 6")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "100 小时内" }));
-    expect(await screen.findByText("2 / 6")).toBeTruthy();
+    expect(await screen.findByText("5 / 6")).toBeTruthy();
     await user.type(search, "Main Sequence");
     expect(await screen.findByText("0 / 6")).toBeTruthy();
     expect(

@@ -41,7 +41,7 @@ function matchesDuration(
     case "under-two":
       return playtimeMinutes < 120;
     case "under-hundred":
-      return playtimeMinutes >= 120 && playtimeMinutes < 6_000;
+      return playtimeMinutes < 6_000;
     case "hundred-plus":
       return playtimeMinutes >= 6_000;
     default:
