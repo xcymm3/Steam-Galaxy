@@ -52,7 +52,6 @@ export interface GalaxyGamePanelProps {
   body: GalaxySceneBody;
   metadata: SteamStoreGameMetadata | undefined;
   metadataStatus?: "idle" | "loading" | "ready" | "unavailable";
-  onLoadMetadata?: () => void;
   onReset: () => void;
 }
 
@@ -336,21 +335,10 @@ function assignBodyMatrices(mesh: InstancedMesh, bodies: GalaxySceneBody[]) {
   mesh.computeBoundingSphere();
 }
 
-function formatGameMode(mode: SteamStoreGameMetadata["modes"][number]) {
-  const labels = {
-    "single-player": "单人",
-    multiplayer: "多人",
-    "co-op": "合作",
-  };
-
-  return labels[mode];
-}
-
 export function GalaxyGamePanel({
   body,
   metadata,
   metadataStatus = metadata ? "ready" : "idle",
-  onLoadMetadata,
   onReset,
 }: GalaxyGamePanelProps) {
   const { node } = body;
@@ -364,20 +352,11 @@ export function GalaxyGamePanel({
   const coverImageUrl = coverImageUrls.find(
     (url) => !failedCoverImageUrls.includes(url),
   );
-  const metadataSignals = [
-    {
-      label: "类型",
-      value: metadata?.genres.slice(0, 3).join(" / ") ?? "",
-    },
-    {
-      label: "模式",
-      value: metadata?.modes.map(formatGameMode).join(" / ") ?? "",
-    },
-    {
-      label: "开发商",
-      value: metadata?.developers[0] ?? "",
-    },
-  ].filter((signal) => signal.value);
+  const genreLabel =
+    metadata?.genres.slice(0, 2).join(" / ") ||
+    (metadataStatus === "idle" || metadataStatus === "loading"
+      ? "补全中"
+      : "暂无类型");
 
   return (
     <section
@@ -430,42 +409,11 @@ export function GalaxyGamePanel({
             <dd>{formatHours(node.game.playtimeMinutes)} 小时</dd>
           </div>
           <div>
-            <dt>App ID</dt>
-            <dd>{node.appId}</dd>
+            <dt>类型</dt>
+            <dd>{genreLabel}</dd>
           </div>
         </dl>
       </div>
-      {metadataSignals.length > 0 ? (
-        <dl className={styles.starMapMetadata}>
-          {metadataSignals.map((signal) => (
-            <div key={signal.label}>
-              <dt>{signal.label}</dt>
-              <dd>{signal.value}</dd>
-            </div>
-          ))}
-        </dl>
-      ) : (
-        <div className={styles.starMapMetadataPending}>
-          {metadataStatus === "loading" || metadataStatus === "idle" ? (
-            <p>正在从 Steam 商店补全类型与玩法信息…</p>
-          ) : metadataStatus === "unavailable" ? (
-            <>
-              <p>Steam 商店暂时没有返回可用详情。</p>
-              {onLoadMetadata && (
-                <button
-                  className={styles.starMapMetadataRetry}
-                  type="button"
-                  onClick={onLoadMetadata}
-                >
-                  重试读取
-                </button>
-              )}
-            </>
-          ) : (
-            <p>Steam 商店没有提供可用的类型或玩法标签。</p>
-          )}
-        </div>
-      )}
       <div className={styles.starMapTelemetryActions}>
         <button
           className={styles.starMapOverviewButton}
@@ -512,14 +460,14 @@ export function StarMap({
     setSelectedId(null);
   };
 
-  const requestMetadata = useCallback((appId: number, force = false) => {
+  const requestMetadata = useCallback((appId: number) => {
     const key = String(appId);
 
     if (metadataByAppIdRef.current[key]) {
       return;
     }
 
-    if (!force && requestedAppIdsRef.current.has(key)) {
+    if (requestedAppIdsRef.current.has(key)) {
       return;
     }
 
@@ -748,16 +696,7 @@ export function StarMap({
       const distance = body
         ? getGalaxyFocusDistance(galaxyScene, body)
         : overviewCameraPosition.distanceTo(overviewTarget);
-      const viewDirection = direction.clone().negate();
-      const screenRight = new Vector3()
-        .crossVectors(viewDirection, new Vector3(0, 1, 0))
-        .normalize();
-      const screenUp = new Vector3()
-        .crossVectors(screenRight, viewDirection)
-        .normalize();
-      const target = body
-        ? bodyTarget.clone().sub(screenUp.multiplyScalar(distance * 0.36))
-        : bodyTarget;
+      const target = bodyTarget;
       const cameraPosition = target
         .clone()
         .add(direction.multiplyScalar(distance));
@@ -1004,9 +943,6 @@ export function StarMap({
                 ? "ready"
                 : "idle")
             }
-            onLoadMetadata={() => {
-              requestMetadata(selectedNode.appId, true);
-            }}
             onReset={resetOverview}
           />
         )}

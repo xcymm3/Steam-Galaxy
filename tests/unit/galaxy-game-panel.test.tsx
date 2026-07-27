@@ -23,7 +23,7 @@ const model = createGalaxyModel([
 const body = createGalaxyScene(model).bodies[0]!;
 
 describe("GalaxyGamePanel", () => {
-  it("renders the selected game's data panel, cover, Steam link and cached store signals", () => {
+  it("renders the selected game's concise archive, cover, type and actions", () => {
     const onReset = vi.fn();
 
     render(
@@ -53,8 +53,6 @@ describe("GalaxyGamePanel", () => {
     expect(screen.getByText("150 小时")).toBeTruthy();
     expect(screen.getByText("恒星档案")).toBeTruthy();
     expect(screen.getByText("Action / Adventure")).toBeTruthy();
-    expect(screen.getByText("单人 / 多人")).toBeTruthy();
-    expect(screen.getByText("Orbit Works")).toBeTruthy();
     expect(
       screen.getByRole("link", { name: "Steam 商店" }).getAttribute("href"),
     ).toBe("https://store.steampowered.com/app/424242/");
@@ -66,22 +64,17 @@ describe("GalaxyGamePanel", () => {
     expect(onReset).toHaveBeenCalledTimes(2);
   });
 
-  it("retries unavailable Store metadata and uses a fallback after the cover fails", () => {
-    const onLoadMetadata = vi.fn();
-
+  it("shows a compact fallback type and uses a cover fallback after the image fails", () => {
     render(
       <GalaxyGamePanel
         body={body}
         metadata={undefined}
         metadataStatus="unavailable"
-        onLoadMetadata={onLoadMetadata}
         onReset={vi.fn()}
       />,
     );
 
-    expect(screen.getByText(/Steam 商店暂时没有返回可用详情/)).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "重试读取" }));
-    expect(onLoadMetadata).toHaveBeenCalledOnce();
+    expect(screen.getByText("暂无类型")).toBeTruthy();
 
     const cover = screen.getByRole("img", {
       name: "Archive Runner 的 Steam 封面",
