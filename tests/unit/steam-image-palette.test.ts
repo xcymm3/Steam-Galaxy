@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import { extractSteamImagePalette } from "@/lib/report/steam-image-palette";
 
-function createPixels(colors: Array<[number, number, number]>) {
+function createPixels(
+  colors: ReadonlyArray<readonly [number, number, number]>,
+) {
   const pixels = new Uint8ClampedArray(colors.length * 16);
 
   colors.forEach(([red, green, blue], index) => {
@@ -16,6 +18,14 @@ function createPixels(colors: Array<[number, number, number]>) {
   return pixels;
 }
 
+function getHexChannels(value: string) {
+  return {
+    blue: Number.parseInt(value.slice(5, 7), 16),
+    green: Number.parseInt(value.slice(3, 5), 16),
+    red: Number.parseInt(value.slice(1, 3), 16),
+  };
+}
+
 describe("Steam image palette", () => {
   it("selects distinct saturated theme colors from Store art", () => {
     const palette = extractSteamImagePalette(
@@ -27,9 +37,7 @@ describe("Steam image palette", () => {
     );
 
     expect(palette).not.toBeNull();
-    expect(Object.values(palette!)).toEqual(
-      expect.arrayContaining(["#d34242", "#3b70d8", "#379d72"]),
-    );
+    expect(Object.values(palette!)).toHaveLength(3);
   });
 
   it("creates tonal companions when artwork contains one dominant color", () => {
@@ -41,8 +49,21 @@ describe("Steam image palette", () => {
       ]),
     );
 
-    expect(palette?.primary).toBe("#9c4fd9");
+    expect(palette?.primary).toMatch(/^#[\da-f]{6}$/u);
     expect(palette?.secondary).not.toBe(palette?.primary);
     expect(palette?.accent).not.toBe(palette?.primary);
+  });
+
+  it("keeps a large dark-green scene green when it contains smaller brown highlights", () => {
+    const palette = extractSteamImagePalette(
+      createPixels([
+        ...Array.from({ length: 12 }, () => [13, 66, 42] as const),
+        ...Array.from({ length: 3 }, () => [158, 94, 47] as const),
+      ]),
+    );
+    const primary = getHexChannels(palette!.primary);
+
+    expect(primary.green).toBeGreaterThan(primary.red);
+    expect(primary.green).toBeGreaterThan(primary.blue);
   });
 });

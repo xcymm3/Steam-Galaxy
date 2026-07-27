@@ -10,38 +10,88 @@ interface RgbColor {
   red: number;
 }
 
-interface ColorBucket extends RgbColor {
-  count: number;
+interface HueBucket extends RgbColor {
+  weight: number;
 }
 
 const paletteCanvasWidth = 64;
 const paletteCanvasHeight = 36;
-const channelBucketSize = 32;
-const minimumLuminance = 0.08;
-const maximumLuminance = 0.94;
-const minimumSaturation = 0.12;
+const hueBucketCount = 24;
+const minimumLightness = 0.015;
+const maximumLightness = 0.98;
+const minimumSaturation = 0.16;
 
 function clampChannel(value: number) {
   return Math.max(0, Math.min(255, Math.round(value)));
 }
 
-function colorDistance(left: RgbColor, right: RgbColor) {
-  const red = left.red - right.red;
-  const green = left.green - right.green;
-  const blue = left.blue - right.blue;
+function toHsl({ red, green, blue }: RgbColor) {
+  const normalizedRed = red / 255;
+  const normalizedGreen = green / 255;
+  const normalizedBlue = blue / 255;
+  const maximum = Math.max(normalizedRed, normalizedGreen, normalizedBlue);
+  const minimum = Math.min(normalizedRed, normalizedGreen, normalizedBlue);
+  const lightness = (maximum + minimum) / 2;
+  const delta = maximum - minimum;
 
-  return Math.sqrt(red ** 2 + green ** 2 + blue ** 2);
+  if (delta === 0) {
+    return { hue: 0, lightness, saturation: 0 };
+  }
+
+  const saturation = delta / (1 - Math.abs(2 * lightness - 1));
+  const hueOffset =
+    maximum === normalizedRed
+      ? (normalizedGreen - normalizedBlue) / delta
+      : maximum === normalizedGreen
+        ? (normalizedBlue - normalizedRed) / delta + 2
+        : (normalizedRed - normalizedGreen) / delta + 4;
+
+  return {
+    hue: ((hueOffset * 60 + 360) % 360) / 360,
+    lightness,
+    saturation,
+  };
 }
 
-function getLuminance({ red, green, blue }: RgbColor) {
-  return (red * 0.2126 + green * 0.7152 + blue * 0.0722) / 255;
+function fromHsl(hue: number, saturation: number, lightness: number): RgbColor {
+  const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+  const hueSegment = hue * 6;
+  const secondary = chroma * (1 - Math.abs((hueSegment % 2) - 1));
+  const match = lightness - chroma / 2;
+  const [red, green, blue] =
+    hueSegment < 1
+      ? [chroma, secondary, 0]
+      : hueSegment < 2
+        ? [secondary, chroma, 0]
+        : hueSegment < 3
+          ? [0, chroma, secondary]
+          : hueSegment < 4
+            ? [0, secondary, chroma]
+            : hueSegment < 5
+              ? [secondary, 0, chroma]
+              : [chroma, 0, secondary];
+
+  return {
+    red: (red + match) * 255,
+    green: (green + match) * 255,
+    blue: (blue + match) * 255,
+  };
 }
 
-function getSaturation({ red, green, blue }: RgbColor) {
-  const maximum = Math.max(red, green, blue);
-  const minimum = Math.min(red, green, blue);
+function hueDistance(left: number, right: number) {
+  const difference = Math.abs(left - right);
 
-  return maximum === 0 ? 0 : (maximum - minimum) / maximum;
+  return Math.min(difference, 1 - difference);
+}
+
+function brightenForPlanet(color: RgbColor) {
+  const { hue, lightness, saturation } = toHsl(color);
+
+  return fromHsl(
+    hue,
+    Math.max(0.48, Math.min(0.86, saturation)),
+    Math.max(0.34, Math.min(0.62, lightness)),
+  );
 }
 
 function toHex({ red, green, blue }: RgbColor) {
@@ -62,7 +112,7 @@ function adjustColor(color: RgbColor, amount: number): RgbColor {
 }
 
 function toPalette(colors: RgbColor[]): SteamImagePalette | null {
-  const primary = colors[0];
+  const primary = colors[0] ? brightenForPlanet(colors[0]) : undefined;
 
   if (!primary) {
     return null;
@@ -70,20 +120,24 @@ function toPalette(colors: RgbColor[]): SteamImagePalette | null {
 
   return {
     primary: toHex(primary),
-    secondary: toHex(colors[1] ?? adjustColor(primary, -0.28)),
-    accent: toHex(colors[2] ?? adjustColor(primary, 0.3)),
+    secondary: toHex(
+      colors[1] ? brightenForPlanet(colors[1]) : adjustColor(primary, -0.28),
+    ),
+    accent: toHex(
+      colors[2] ? brightenForPlanet(colors[2]) : adjustColor(primary, 0.3),
+    ),
   };
 }
 
 /**
  * Builds three distinct theme colors from a down-sampled Steam header image.
- * Dark, white and low-saturation pixels are ignored first so title lettering
- * and Store page chrome do not dominate a planet's palette.
+ * Colors are grouped by hue before their brightness is considered, allowing a
+ * large dark-green scene to outweigh a small but bright brown title treatment.
  */
 export function extractSteamImagePalette(
   pixels: Uint8ClampedArray,
 ): SteamImagePalette | null {
-  const buckets = new Map<string, ColorBucket>();
+  const buckets = new Map<number, HueBucket>();
 
   for (let index = 0; index < pixels.length; index += 16) {
     const alpha = pixels[index + 3] ?? 0;
@@ -91,54 +145,57 @@ export function extractSteamImagePalette(
     const green = pixels[index + 1] ?? 0;
     const blue = pixels[index + 2] ?? 0;
     const color = { red, green, blue };
-    const luminance = getLuminance(color);
+    const { hue, lightness, saturation } = toHsl(color);
 
     if (
       alpha < 180 ||
-      luminance < minimumLuminance ||
-      luminance > maximumLuminance ||
-      getSaturation(color) < minimumSaturation
+      lightness < minimumLightness ||
+      lightness > maximumLightness ||
+      saturation < minimumSaturation
     ) {
       continue;
     }
 
-    const key = [red, green, blue]
-      .map((channel) => Math.floor(channel / channelBucketSize))
-      .join(":");
+    const key = Math.min(hueBucketCount - 1, Math.floor(hue * hueBucketCount));
+    const weight = saturation * (0.35 + lightness * 0.65);
     const bucket = buckets.get(key) ?? {
       red: 0,
       green: 0,
       blue: 0,
-      count: 0,
+      weight: 0,
     };
 
-    bucket.red += red;
-    bucket.green += green;
-    bucket.blue += blue;
-    bucket.count += 1;
+    bucket.red += red * weight;
+    bucket.green += green * weight;
+    bucket.blue += blue * weight;
+    bucket.weight += weight;
     buckets.set(key, bucket);
   }
 
   const ranked = [...buckets.values()]
     .map((bucket) => {
       const color = {
-        red: bucket.red / bucket.count,
-        green: bucket.green / bucket.count,
-        blue: bucket.blue / bucket.count,
+        red: bucket.red / bucket.weight,
+        green: bucket.green / bucket.weight,
+        blue: bucket.blue / bucket.weight,
       };
 
       return {
         color,
-        score: bucket.count * (0.4 + getSaturation(color)),
+        hue: toHsl(color).hue,
+        score: bucket.weight,
       };
     })
     .sort((left, right) => right.score - left.score);
   const selected: RgbColor[] = [];
 
-  ranked.forEach(({ color }) => {
+  ranked.forEach(({ color, hue }) => {
     if (
       selected.length < 3 &&
-      selected.every((existing) => colorDistance(existing, color) > 58)
+      selected.every(
+        (existing) =>
+          hueDistance(toHsl(existing).hue, hue) > 1 / hueBucketCount,
+      )
     ) {
       selected.push(color);
     }
