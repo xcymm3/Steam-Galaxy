@@ -73,13 +73,13 @@ describe("galaxy scene", () => {
     });
   });
 
-  it("preserves strict planet radii while giving zero-hour archive signals a pickable render size", () => {
+  it("keeps zero-hour games as small, pickable planets", () => {
     const model = createGalaxyModel(allUnplayedFixture.games);
     const scene = createGalaxyScene(model);
 
     expect(scene.bodies).toHaveLength(20);
-    expect(scene.bodies.every((body) => !body.isCore)).toBe(true);
-    expect(scene.bodies.every((body) => body.node.physicalRadius === 0)).toBe(
+    expect(scene.bodies[0]?.isCore).toBe(true);
+    expect(scene.bodies.every((body) => body.node.kind === "planet")).toBe(
       true,
     );
     expect(scene.bodies.every((body) => body.radius > 0)).toBe(true);

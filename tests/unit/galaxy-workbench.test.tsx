@@ -73,7 +73,7 @@ describe("GalaxyWorkbench", () => {
     ).toBe("/");
   });
 
-  it("filters the interactive bodies by name, archive state and duration", async () => {
+  it("filters the interactive bodies by name and cumulative duration", async () => {
     const user = userEvent.setup();
 
     render(<GalaxyWorkbench report={report} />);
@@ -83,16 +83,22 @@ describe("GalaxyWorkbench", () => {
     expect(await screen.findByText("1 / 6")).toBeTruthy();
 
     await user.clear(search);
-    await user.click(screen.getByRole("button", { name: "未点亮" }));
-    expect(await screen.findByText("2 / 6")).toBeTruthy();
-
     await user.click(screen.getByRole("button", { name: "100 小时+" }));
+    expect(await screen.findByText("1 / 6")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "2 小时内" }));
+    expect(await screen.findByText("3 / 6")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "100 小时内" }));
+    expect(await screen.findByText("2 / 6")).toBeTruthy();
+    await user.type(search, "Main Sequence");
     expect(await screen.findByText("0 / 6")).toBeTruthy();
     expect(
       screen.getByText(
         "没有可匹配的可探索星体。试试清空筛选，或搜索另一款游戏。",
       ),
     ).toBeTruthy();
+
+    expect(screen.queryByRole("button", { name: "已点亮" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "未点亮" })).toBeNull();
 
     await user.click(screen.getByRole("button", { name: "清空筛选" }));
     expect(await screen.findByText("6 / 6")).toBeTruthy();

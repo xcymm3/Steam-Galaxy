@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   createGalaxyModel,
   GALAXY_INTERACTIVE_GAME_LIMIT,
+  GALAXY_MINIMUM_PLANET_RADIUS,
   getGalaxyPlanetRadius,
 } from "@/lib/report/galaxy";
 import type { OwnedGame } from "@/lib/report/types";
@@ -43,14 +44,16 @@ describe("galaxy model", () => {
     });
   });
 
-  it("represents zero-hour games as selectable archive signals with zero physical volume", () => {
+  it("represents zero-hour games as small selectable planets", () => {
     const model = createGalaxyModel(allUnplayedFixture.games);
 
     expect(model.games).toHaveLength(20);
-    expect(model.games.every((node) => node.kind === "archive-signal")).toBe(
-      true,
-    );
-    expect(model.games.every((node) => node.physicalRadius === 0)).toBe(true);
+    expect(model.games.every((node) => node.kind === "planet")).toBe(true);
+    expect(
+      model.games.every(
+        (node) => node.physicalRadius === GALAXY_MINIMUM_PLANET_RADIUS,
+      ),
+    ).toBe(true);
     expect(model.unplayedGameCount).toBe(20);
   });
 

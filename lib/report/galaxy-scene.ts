@@ -1,7 +1,10 @@
-import type { GalaxyGameNode, GalaxyModel } from "./galaxy";
+import {
+  GALAXY_MINIMUM_PLANET_RADIUS,
+  type GalaxyGameNode,
+  type GalaxyModel,
+} from "./galaxy";
 
 const fullTurn = Math.PI * 2;
-const archiveSignalRadius = 0.26;
 const minimumOrbitRadius = 16;
 const orbitBandGap = 10;
 const textureVariantCount = 4;
@@ -52,7 +55,7 @@ function normalizedHash(value: string) {
 }
 
 function getRenderRadius(node: GalaxyGameNode) {
-  return node.kind === "planet" ? node.physicalRadius : archiveSignalRadius;
+  return node.physicalRadius;
 }
 
 function createOrbitPlans(nodes: GalaxyGameNode[], coreRadius: number) {
@@ -69,7 +72,7 @@ function createOrbitPlans(nodes: GalaxyGameNode[], coreRadius: number) {
 
     const maxBodyRadius = bandNodes.reduce(
       (maximum, node) => Math.max(maximum, getRenderRadius(node)),
-      archiveSignalRadius,
+      GALAXY_MINIMUM_PLANET_RADIUS,
     );
     const radius = previousPlan
       ? previousPlan.radius +

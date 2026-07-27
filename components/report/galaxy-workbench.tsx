@@ -13,26 +13,16 @@ interface GalaxyWorkbenchProps {
   report: ReportData;
 }
 
-type ActivityFilter = "all" | "played" | "archive";
-type DurationFilter = "all" | "brief" | "two-hours" | "hundred-hours";
-
-const activityFilters: ReadonlyArray<{
-  id: ActivityFilter;
-  label: string;
-}> = [
-  { id: "all", label: "全部" },
-  { id: "played", label: "已点亮" },
-  { id: "archive", label: "未点亮" },
-];
+type DurationFilter = "all" | "under-two" | "under-hundred" | "hundred-plus";
 
 const durationFilters: ReadonlyArray<{
   id: DurationFilter;
   label: string;
 }> = [
-  { id: "all", label: "任意时长" },
-  { id: "brief", label: "2 小时内" },
-  { id: "two-hours", label: "2 小时+" },
-  { id: "hundred-hours", label: "100 小时+" },
+  { id: "all", label: "全部" },
+  { id: "under-two", label: "2 小时内" },
+  { id: "under-hundred", label: "100 小时内" },
+  { id: "hundred-plus", label: "100 小时+" },
 ];
 
 function formatHours(hours: number) {
@@ -48,11 +38,11 @@ function matchesDuration(
   durationFilter: DurationFilter,
 ) {
   switch (durationFilter) {
-    case "brief":
-      return playtimeMinutes > 0 && playtimeMinutes < 120;
-    case "two-hours":
-      return playtimeMinutes >= 120;
-    case "hundred-hours":
+    case "under-two":
+      return playtimeMinutes < 120;
+    case "under-hundred":
+      return playtimeMinutes >= 120 && playtimeMinutes < 6_000;
+    case "hundred-plus":
       return playtimeMinutes >= 6_000;
     default:
       return true;
@@ -62,7 +52,6 @@ function matchesDuration(
 function createFilteredGalaxy(
   galaxy: GalaxyModel,
   search: string,
-  activityFilter: ActivityFilter,
   durationFilter: DurationFilter,
 ): GalaxyModel {
   return {
@@ -72,15 +61,8 @@ function createFilteredGalaxy(
         !search ||
         node.game.name.toLocaleLowerCase("zh-CN").includes(search) ||
         String(node.appId).includes(search);
-      const matchesActivity =
-        activityFilter === "all" ||
-        (activityFilter === "played"
-          ? node.game.playtimeMinutes > 0
-          : node.game.playtimeMinutes === 0);
-
       return (
         matchesSearch &&
-        matchesActivity &&
         matchesDuration(node.game.playtimeMinutes, durationFilter)
       );
     }),
@@ -90,29 +72,18 @@ function createFilteredGalaxy(
 export function GalaxyWorkbench({ report }: GalaxyWorkbenchProps) {
   const { galaxy, metrics, player } = report;
   const [searchInput, setSearchInput] = useState("");
-  const [activityFilter, setActivityFilter] = useState<ActivityFilter>("all");
   const [durationFilter, setDurationFilter] = useState<DurationFilter>("all");
   const [isFilterDockOpen, setFilterDockOpen] = useState(false);
   const deferredSearch = useDeferredValue(normalizeSearch(searchInput));
   const filteredGalaxy = useMemo(
-    () =>
-      createFilteredGalaxy(
-        galaxy,
-        deferredSearch,
-        activityFilter,
-        durationFilter,
-      ),
-    [activityFilter, deferredSearch, durationFilter, galaxy],
+    () => createFilteredGalaxy(galaxy, deferredSearch, durationFilter),
+    [deferredSearch, durationFilter, galaxy],
   );
-  const hasActiveFilters =
-    Boolean(searchInput) ||
-    activityFilter !== "all" ||
-    durationFilter !== "all";
+  const hasActiveFilters = Boolean(searchInput) || durationFilter !== "all";
   const visibleGameCount = filteredGalaxy.games.length;
 
   const resetFilters = () => {
     setSearchInput("");
-    setActivityFilter("all");
     setDurationFilter("all");
   };
 
@@ -140,11 +111,11 @@ export function GalaxyWorkbench({ report }: GalaxyWorkbenchProps) {
             <dd>{formatHours(metrics.totalPlaytimeHours)} 小时</dd>
           </div>
           <div>
-            <dt>已点亮</dt>
-            <dd>{metrics.playedGameCount} 款</dd>
+            <dt>库存游戏</dt>
+            <dd>{metrics.totalGameCount} 款</dd>
           </div>
           <div>
-            <dt>可探索星体</dt>
+            <dt>星图星体</dt>
             <dd>{galaxy.games.length} 个</dd>
           </div>
         </dl>
@@ -179,22 +150,6 @@ export function GalaxyWorkbench({ report }: GalaxyWorkbenchProps) {
                   placeholder="游戏名或 App ID"
                 />
               </label>
-              <fieldset className={styles.filterGroup}>
-                <legend>档案状态</legend>
-                <div className={styles.filterButtons}>
-                  {activityFilters.map((filter) => (
-                    <button
-                      className={styles.filterButton}
-                      key={filter.id}
-                      type="button"
-                      aria-pressed={activityFilter === filter.id}
-                      onClick={() => setActivityFilter(filter.id)}
-                    >
-                      {filter.label}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
               <fieldset className={styles.filterGroup}>
                 <legend>累计时长</legend>
                 <div className={styles.filterButtons}>

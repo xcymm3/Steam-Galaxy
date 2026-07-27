@@ -336,10 +336,6 @@ function assignBodyMatrices(mesh: InstancedMesh, bodies: GalaxySceneBody[]) {
   mesh.computeBoundingSphere();
 }
 
-function selectedBodyKind(node: GalaxyGameNode) {
-  return node.kind === "planet" ? "行星" : "档案信标";
-}
-
 function formatGameMode(mode: SteamStoreGameMetadata["modes"][number]) {
   const labels = {
     "single-player": "单人",
@@ -348,12 +344,6 @@ function formatGameMode(mode: SteamStoreGameMetadata["modes"][number]) {
   };
 
   return labels[mode];
-}
-
-function formatPhysicalRadius(node: GalaxyGameNode) {
-  return node.kind === "planet"
-    ? `${node.physicalRadius.toFixed(2)} u`
-    : "无实体";
 }
 
 export function GalaxyGamePanel({
@@ -396,59 +386,53 @@ export function GalaxyGamePanel({
       aria-live="polite"
     >
       <div className={styles.starMapTelemetryHead}>
-        <p>游戏档案</p>
+        <p>星体档案</p>
         <span>#{node.rank}</span>
+        <button
+          className={styles.starMapTelemetryClose}
+          type="button"
+          onClick={onReset}
+          aria-label="关闭星体档案"
+        >
+          ×
+        </button>
       </div>
-      <div className={styles.starMapTelemetryOverview}>
-        <div className={styles.starMapCoverFrame}>
-          {coverImageUrl ? (
-            <>
-              {/* The URL is runtime Steam data, so it intentionally bypasses a static image allowlist. */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={coverImageUrl}
-                alt={`${node.game.name} 的 Steam 封面`}
-                onError={() => {
-                  setFailedCoverImageUrls((failedUrls) =>
-                    failedUrls.includes(coverImageUrl)
-                      ? failedUrls
-                      : [...failedUrls, coverImageUrl],
-                  );
-                }}
-              />
-            </>
-          ) : (
-            <div
-              className={styles.starMapCoverFallback}
-              role="img"
-              aria-label={`${node.game.name} 的 Steam 封面不可用`}
-            >
-              <span>STEAM / ARCHIVE</span>
-              <strong>APP {node.appId}</strong>
-            </div>
-          )}
+      {coverImageUrl ? (
+        /* The URL is runtime Steam data, so it intentionally bypasses a static image allowlist. */
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img
+          className={styles.starMapTelemetryCover}
+          src={coverImageUrl}
+          alt={`${node.game.name} 的 Steam 封面`}
+          onError={() => {
+            setFailedCoverImageUrls((failedUrls) =>
+              failedUrls.includes(coverImageUrl)
+                ? failedUrls
+                : [...failedUrls, coverImageUrl],
+            );
+          }}
+        />
+      ) : (
+        <div
+          className={styles.starMapTelemetryCoverFallback}
+          role="img"
+          aria-label={`${node.game.name} 的 Steam 封面不可用`}
+        >
+          STEAM / APP {node.appId}
         </div>
-        <div className={styles.starMapTelemetryPrimary}>
-          <h3>{node.game.name}</h3>
-          <dl className={styles.starMapTelemetryMetrics}>
-            <div>
-              <dt>累计时长</dt>
-              <dd>{formatHours(node.game.playtimeMinutes)} 小时</dd>
-            </div>
-            <div>
-              <dt>星体类型</dt>
-              <dd>{selectedBodyKind(node)}</dd>
-            </div>
-            <div>
-              <dt>时长半径</dt>
-              <dd>{formatPhysicalRadius(node)}</dd>
-            </div>
-            <div>
-              <dt>App ID</dt>
-              <dd>{node.appId}</dd>
-            </div>
-          </dl>
-        </div>
+      )}
+      <div className={styles.starMapTelemetryPrimary}>
+        <h3>{node.game.name}</h3>
+        <dl className={styles.starMapTelemetryMetrics}>
+          <div>
+            <dt>累计时长</dt>
+            <dd>{formatHours(node.game.playtimeMinutes)} 小时</dd>
+          </div>
+          <div>
+            <dt>App ID</dt>
+            <dd>{node.appId}</dd>
+          </div>
+        </dl>
       </div>
       {metadataSignals.length > 0 ? (
         <dl className={styles.starMapMetadata}>
@@ -490,13 +474,6 @@ export function GalaxyGamePanel({
         >
           Steam 商店
         </a>
-        <button
-          className={styles.starMapTelemetryReset}
-          type="button"
-          onClick={onReset}
-        >
-          返回全景
-        </button>
       </div>
     </section>
   );
@@ -640,7 +617,6 @@ export function StarMap({
     scene.add(field.field);
 
     const sphereGeometry = new SphereGeometry(1, 32, 20);
-    const archiveGeometry = new SphereGeometry(1, 14, 10);
     const ringGeometry = new TorusGeometry(1, 0.045, 8, 64);
     const ringMaterial = new MeshBasicMaterial({
       color: colors.accent,
@@ -666,7 +642,6 @@ export function StarMap({
     > = [ringMaterial, field.material];
     const disposableGeometries: BufferGeometry[] = [
       sphereGeometry,
-      archiveGeometry,
       ringGeometry,
       field.geometry,
     ];
@@ -707,9 +682,7 @@ export function StarMap({
       disposableMaterials.push(coreMaterial);
     }
 
-    const planetBodies = galaxyScene.bodies.filter(
-      (body) => !body.isCore && body.node.kind === "planet",
-    );
+    const planetBodies = galaxyScene.bodies.filter((body) => !body.isCore);
     const textureGroups = groupBodiesByTexture(planetBodies);
     textureGroups.forEach((bodies, textureVariant) => {
       const texture = createPlanetTexture(textureVariant, colors);
@@ -729,28 +702,6 @@ export function StarMap({
       disposableTextures.push(texture);
       disposableMaterials.push(material);
     });
-
-    const archiveBodies = galaxyScene.bodies.filter(
-      (body) => body.node.kind === "archive-signal",
-    );
-    if (archiveBodies.length > 0) {
-      const archiveMaterial = new MeshBasicMaterial({
-        color: colors.muted,
-        transparent: true,
-        opacity: 0.82,
-      });
-      const archiveMesh = new InstancedMesh(
-        archiveGeometry,
-        archiveMaterial,
-        archiveBodies.length,
-      );
-      archiveMesh.userData.bodies = archiveBodies;
-      archiveMesh.name = "archive-signals";
-      assignBodyMatrices(archiveMesh, archiveBodies);
-      scene.add(archiveMesh);
-      pickable.push(archiveMesh);
-      disposableMaterials.push(archiveMaterial);
-    }
 
     const occupiedOrbits = new Set<number>();
     galaxyScene.bodies.forEach((body) => {
@@ -1003,11 +954,15 @@ export function StarMap({
     );
   }
 
-  const mapLabel = `Three.js Steam 星系，展示时长最高的 ${galaxy.games.length} 款游戏；已游玩星球的体积严格按游玩时长映射。`;
+  const mapLabel = `Three.js Steam 星系，展示时长最高的 ${galaxy.games.length} 款游戏；所有游戏均显示为可选择星球，星球体积按游玩时长映射。`;
 
   return (
     <figure className={styles.starMapFigure}>
-      <div className={styles.starMapStage}>
+      <div
+        className={`${styles.starMapStage} ${
+          selectedNode ? styles.starMapStageSelected : ""
+        }`}
+      >
         <div
           ref={mountRef}
           className={styles.starMapCanvas}

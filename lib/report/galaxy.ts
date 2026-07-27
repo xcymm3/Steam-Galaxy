@@ -5,8 +5,9 @@ import type { OwnedGame } from "./types";
 
 export const GALAXY_INTERACTIVE_GAME_LIMIT = 100;
 export const GALAXY_PLANET_RADIUS_SCALE = 0.5;
+export const GALAXY_MINIMUM_PLANET_RADIUS = 0.3;
 
-export type GalaxyGameKind = "planet" | "archive-signal";
+export type GalaxyGameKind = "planet";
 
 export interface GalaxyGameNode {
   id: string;
@@ -38,13 +39,12 @@ export interface GalaxyModel {
 /**
  * A sphere's volume is 4/3πr³. Making r proportional to ∛hours means that
  * every positive-playtime planet has volume strictly proportional to playtime.
- *
- * Zero-hour games intentionally have no physical volume. The renderer presents
- * them as archive signals rather than inventing a planet size for them.
+ * A zero-hour game receives the smallest visible planet so every owned game
+ * belongs to the same navigable stellar system.
  */
 export function getGalaxyPlanetRadius(playtimeMinutes: number) {
   if (playtimeMinutes <= 0) {
-    return 0;
+    return GALAXY_MINIMUM_PLANET_RADIUS;
   }
 
   return Math.cbrt(playtimeMinutes / 60) * GALAXY_PLANET_RADIUS_SCALE;
@@ -73,7 +73,7 @@ function summarizeLongTail(games: OwnedGame[]): GalaxyLongTail | null {
 
 /**
  * Separates a full Steam library into at most one hundred individually
- * selectable bodies and an honest aggregate for the remaining games.
+ * selectable planets and an honest aggregate for the remaining games.
  *
  * Ordering is deterministic: higher playtime first, then lower AppID. Every
  * library game remains represented by either a selectable body or the long-tail
@@ -93,7 +93,7 @@ export function createGalaxyModel(games: readonly OwnedGame[]): GalaxyModel {
       appId: game.appId,
       coverImageUrl: getSteamGameHeaderImageUrl(game.appId),
       game,
-      kind: game.playtimeMinutes > 0 ? "planet" : "archive-signal",
+      kind: "planet",
       rank: index + 1,
       physicalRadius: getGalaxyPlanetRadius(game.playtimeMinutes),
     })),

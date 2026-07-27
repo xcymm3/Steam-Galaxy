@@ -23,7 +23,7 @@ const model = createGalaxyModel([
 const body = createGalaxyScene(model).bodies[0]!;
 
 describe("GalaxyGamePanel", () => {
-  it("renders the selected game's cover, Steam link and cached store signals", () => {
+  it("renders the selected game's data panel, cover, Steam link and cached store signals", () => {
     const onReset = vi.fn();
 
     render(
@@ -58,11 +58,11 @@ describe("GalaxyGamePanel", () => {
       screen.getByRole("link", { name: "Steam 商店" }).getAttribute("href"),
     ).toBe("https://store.steampowered.com/app/424242/");
 
-    fireEvent.click(screen.getByRole("button", { name: "返回全景" }));
+    fireEvent.click(screen.getByRole("button", { name: "关闭星体档案" }));
     expect(onReset).toHaveBeenCalledOnce();
   });
 
-  it("retries unavailable Store metadata and replaces a failed cover with an archive fallback", () => {
+  it("retries unavailable Store metadata and uses a fallback after the cover fails", () => {
     const onLoadMetadata = vi.fn();
 
     render(
@@ -82,9 +82,6 @@ describe("GalaxyGamePanel", () => {
     const cover = screen.getByRole("img", {
       name: "Archive Runner 的 Steam 封面",
     }) as HTMLImageElement;
-    expect(cover.src).toBe(
-      "https://cdn.cloudflare.steamstatic.com/steam/apps/424242/header.jpg",
-    );
     fireEvent.error(cover);
     expect(
       screen.getByRole("img", {
