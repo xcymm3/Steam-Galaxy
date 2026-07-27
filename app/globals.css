@@ -280,6 +280,7 @@ h1 {
 .storyButton:focus-visible,
 .textButton:focus-visible,
 .steamLoginButton:focus-visible,
+.authorGalaxyButton:focus-visible,
 .jsonHeading a:focus-visible,
 .jsonOutput:focus-visible {
   outline: var(--rule-focus) solid var(--color-accent-ink);
@@ -321,11 +322,13 @@ h1 {
   .retryButton:hover:not(:disabled),
   .storyButton:hover:not(:disabled),
   .textButton:hover,
-  .steamLoginButton:hover {
+  .steamLoginButton:hover,
+  .authorGalaxyButton:hover:not(:disabled) {
     transform: translateY(-0.1rem);
   }
 
-  .steamLoginButton:hover {
+  .steamLoginButton:hover,
+  .authorGalaxyButton:hover:not(:disabled) {
     border-color: var(--color-accent);
   }
 }
@@ -365,6 +368,31 @@ h1 {
   transition:
     border-color var(--duration-fast) var(--ease-standard),
     transform var(--duration-fast) var(--ease-standard);
+}
+
+.authorGalaxyButton {
+  display: grid;
+  width: 100%;
+  min-height: 2.75rem;
+  place-items: center;
+  margin-top: var(--space-3);
+  padding-inline: var(--space-4);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  background: transparent;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+.authorGalaxyButton:disabled {
+  cursor: wait;
+  opacity: 0.58;
 }
 
 .steamAuthNotice {
@@ -603,7 +631,8 @@ h1 {
 .lookupPanel:not([data-status="idle"]) > h2,
 .lookupPanel:not([data-status="idle"]) > .lookupForm,
 .lookupPanel:not([data-status="idle"]) > .steamLoginDivider,
-.lookupPanel:not([data-status="idle"]) > .steamLoginButton {
+.lookupPanel:not([data-status="idle"]) > .steamLoginButton,
+.lookupPanel:not([data-status="idle"]) > .authorGalaxyButton {
   display: none;
 }
 

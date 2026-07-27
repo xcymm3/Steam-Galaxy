@@ -39,6 +39,8 @@ const steamAuthNotices: Partial<Record<SteamAuthStatus, string>> = {
   timeout: "Steam 登录验证超时了。请稍后重新发起登录。",
 };
 
+const authorSteamId = "76561198209530389";
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -112,7 +114,7 @@ export function SteamReportConsole({
     }
   }, [state.status]);
 
-  async function lookUpSteamIdentity(input: string) {
+  async function lookUpSteamIdentity(input: string, openGalaxy = false) {
     requestRef.current?.abort();
     const controller = new AbortController();
     requestRef.current = controller;
@@ -129,6 +131,14 @@ export function SteamReportConsole({
       const payload = await readLookupResponse(response);
 
       if (payload.ok) {
+        if (
+          openGalaxy &&
+          saveReportSession(window.sessionStorage, payload.data)
+        ) {
+          router.push("/report");
+          return;
+        }
+
         setState({ status: "success", input, report: payload.data });
         return;
       }
@@ -270,6 +280,14 @@ export function SteamReportConsole({
       <a className="steamLoginButton" href="/api/auth/steam/start">
         使用 Steam 登录
       </a>
+      <button
+        className="authorGalaxyButton"
+        type="button"
+        disabled={isLoading}
+        onClick={() => void lookUpSteamIdentity(authorSteamId, true)}
+      >
+        查看作者的 Steam 星系
+      </button>
       {authStatus &&
         authStatus !== "success" &&
         steamAuthNotices[authStatus] && (

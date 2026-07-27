@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -100,6 +100,25 @@ describe("SteamReportConsole report entry", () => {
     ).toBe("/api/auth/steam/start");
     expect(screen.getByRole("status").textContent).toContain(
       "已取消 Steam 登录",
+    );
+  });
+
+  it("opens the author's fixed Steam galaxy without requiring a visitor login", async () => {
+    const user = userEvent.setup();
+    render(<SteamReportConsole />);
+
+    await user.click(
+      screen.getByRole("button", { name: "查看作者的 Steam 星系" }),
+    );
+
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/report"));
+    expect(loadReportSession(window.sessionStorage)).toEqual(report);
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/steam/report",
+      expect.objectContaining({
+        body: JSON.stringify({ steamIdInput: "76561198209530389" }),
+        method: "POST",
+      }),
     );
   });
 
