@@ -113,4 +113,4 @@ GitHub Actions 会在推送到 `main` 分支和 Pull Request 时运行 `pnpm che
 
 ## 许可证
 
-本仓库当前未声明开源许可证。使用、分发或二次开发前请先联系仓库维护者。
+本项目采用 [MIT License](LICENSE)。
