@@ -28,7 +28,7 @@
 }
 
 .posterRecovery h1,
-.posterArchive h2,
+.posterClassification h2,
 .posterPlanets h2 {
   min-width: 0;
   overflow-wrap: anywhere;
@@ -193,7 +193,7 @@
   line-height: var(--leading-copy);
 }
 
-.posterArchive {
+.posterClassification {
   display: grid;
   gap: var(--space-3);
   min-width: 0;
@@ -202,7 +202,7 @@
   background: var(--color-story-paper);
 }
 
-.posterArchive > p {
+.posterClassification > p {
   margin: 0;
   color: var(--color-story-accent);
   font-family: var(--font-story-mono);
@@ -211,14 +211,14 @@
   letter-spacing: var(--tracking-label);
 }
 
-.posterArchive h2 {
+.posterClassification h2 {
   margin: 0;
   color: var(--color-story-ink);
   font-size: var(--text-xl);
   line-height: 1;
 }
 
-.posterArchive dl {
+.posterClassification dl {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
@@ -297,19 +297,20 @@
   white-space: nowrap;
 }
 
-.posterFooter {
+.posterQrSection {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--space-4);
-  padding-top: var(--space-4);
-  border-top: var(--rule-hair) solid var(--color-story-rule-strong);
+  padding: var(--space-4);
+  border: var(--rule-hair) solid var(--color-story-rule-strong);
+  background: var(--color-story-paper);
 }
 
-.posterFooter > div {
+.posterQrSection > div {
   min-width: 0;
 }
 
-.posterFooter > div > p {
+.posterQrSection > div > p {
   margin: 0 0 var(--space-3);
   color: var(--color-story-accent);
   font-family: var(--font-story-display);
@@ -318,26 +319,26 @@
   letter-spacing: var(--tracking-display);
 }
 
-.posterFooter dl,
-.posterArchive dl {
+.posterQrSection dl,
+.posterClassification dl {
   display: grid;
   gap: var(--space-2);
   margin: 0;
 }
 
-.posterFooter dl {
+.posterQrSection dl {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.posterFooter dt,
-.posterArchive dt {
+.posterQrSection dt,
+.posterClassification dt {
   color: var(--color-story-faint);
   font-family: var(--font-story-mono);
   font-size: var(--text-xs);
 }
 
-.posterFooter dd,
-.posterArchive dd {
+.posterQrSection dd,
+.posterClassification dd {
   min-width: 0;
   margin: var(--space-1) 0 0;
   overflow-wrap: anywhere;
@@ -346,15 +347,15 @@
   font-variant-numeric: tabular-nums;
 }
 
-.posterFooter aside {
+.posterQrSection aside {
   display: grid;
   grid-template-columns: auto;
   justify-items: center;
   align-content: center;
   gap: var(--space-1);
-  width: 5.5rem;
-  min-height: 5.5rem;
-  padding: var(--space-1);
+  width: 12rem;
+  min-height: 12rem;
+  padding: var(--space-3);
   background: var(--color-story-accent-ink);
   color: var(--color-story-muted);
   font-family: var(--font-story-mono);
@@ -362,15 +363,10 @@
   text-align: center;
 }
 
-.posterFooter aside img {
+.posterQrSection aside img {
   display: block;
-  width: 4.25rem;
-  height: 4.25rem;
-}
-
-.posterFooter aside small {
-  color: var(--color-story-muted);
-  font: inherit;
+  width: 10.5rem;
+  height: 10.5rem;
 }
 
 .posterShareMessage {
@@ -420,11 +416,19 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .posterFooter dl {
+  .posterQrSection dl {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .posterArchive dl {
+  .posterQrSection {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .posterQrSection aside {
+    justify-self: start;
+  }
+
+  .posterClassification dl {
     grid-template-columns: minmax(0, 1fr);
   }
 }

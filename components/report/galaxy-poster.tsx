@@ -20,7 +20,6 @@ interface PosterCanvasOptions {
   origin: string;
   qrDataUrl: string;
   summary: GalaxyPosterSummary;
-  playerName: string;
 }
 
 function formatHours(hours: number) {
@@ -72,7 +71,6 @@ function loadImage(source: string) {
 
 async function createPosterImage({
   origin,
-  playerName,
   qrDataUrl,
   summary,
 }: PosterCanvasOptions) {
@@ -133,16 +131,25 @@ async function createPosterImage({
   context.strokeRect(80, 428, 920, 182);
   context.fillStyle = accent;
   context.font = '700 22px "Microsoft YaHei", sans-serif';
-  context.fillText("可分享档案", 108, 470);
+  context.fillText("玩家坐标", 108, 470);
   context.fillStyle = ink;
   context.font = '700 40px "Microsoft YaHei", sans-serif';
-  context.fillText(`${trimText(playerName, 18)} 的游戏星系`, 108, 528);
+  context.fillText(
+    `你属于：${summary.tier.label}·${summary.preference.label}玩家`,
+    108,
+    528,
+  );
   context.fillStyle = muted;
   context.font = '400 25px "Microsoft YaHei", sans-serif';
   context.fillText(
-    `偏爱类型：${summary.dominantGenre ?? "数据追踪中"}`,
+    `${summary.tier.label}：${summary.tier.description}`,
     108,
     570,
+  );
+  context.fillText(
+    `${summary.preference.label}：${summary.preference.description}`,
+    108,
+    602,
   );
 
   context.fillStyle = ink;
@@ -171,29 +178,24 @@ async function createPosterImage({
     context.fillText(`${formatHours(planet.hours)} 小时`, x + 22, y + 30);
   });
 
+  context.fillStyle = paper;
+  context.fillRect(80, 1080, 920, 260);
   context.strokeStyle = rule;
-  context.beginPath();
-  context.moveTo(80, 1080);
-  context.lineTo(1000, 1080);
-  context.stroke();
+  context.strokeRect(80, 1080, 920, 260);
   context.fillStyle = accent;
-  context.font = '700 30px "Microsoft YaHei", sans-serif';
-  context.fillText(`你属于：${summary.persona}`, 80, 1138);
+  context.font = '700 24px "Microsoft YaHei", sans-serif';
+  context.fillText("扫描创建你的游戏星系", 112, 1130);
   context.fillStyle = muted;
   context.font = '400 22px "Microsoft YaHei", sans-serif';
-  context.fillText(`总航程 ${formatHours(summary.totalHours)} 小时`, 80, 1178);
-  context.fillText(`库存 ${summary.totalGameCount} 款`, 332, 1178);
-  context.fillText(`未启动 ${summary.unplayedGameCount} 款`, 554, 1178);
+  context.fillText(`总航程 ${formatHours(summary.totalHours)} 小时`, 112, 1180);
+  context.fillText(`库存 ${summary.totalGameCount} 款`, 112, 1216);
+  context.fillText(`未启动 ${summary.unplayedGameCount} 款`, 112, 1252);
+  context.fillText(origin.replace(/^https?:\/\//u, ""), 112, 1302);
 
   const qrCode = await loadImage(qrDataUrl);
   context.fillStyle = accentInk;
-  context.fillRect(836, 1096, 164, 114);
-  context.drawImage(qrCode, 850, 1110, 86, 86);
-  context.fillStyle = accent;
-  context.font = '400 17px "Microsoft YaHei", sans-serif';
-  context.fillText("扫码创建", 944, 1146);
-  context.fillText("你的星系", 944, 1172);
-  context.fillText(origin.replace(/^https?:\/\//u, ""), 80, 1408);
+  context.fillRect(716, 1098, 252, 224);
+  context.drawImage(qrCode, 732, 1114, 192, 192);
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((blob) => {
@@ -259,7 +261,6 @@ function GalaxyPoster({ report }: { report: ReportData }) {
     try {
       const posterImage = await createPosterImage({
         origin,
-        playerName: report.player.displayName,
         qrDataUrl,
         summary,
       });
@@ -324,17 +325,22 @@ function GalaxyPoster({ report }: { report: ReportData }) {
             </p>
           </div>
 
-          <section className={styles.posterArchive} aria-label="可分享档案">
-            <p>可分享档案</p>
-            <h2>{report.player.displayName} 的游戏星系</h2>
+          <section
+            className={styles.posterClassification}
+            aria-label="玩家坐标"
+          >
+            <p>玩家坐标</p>
+            <h2>
+              你属于：{summary.tier.label}·{summary.preference.label}玩家
+            </h2>
             <dl>
               <div>
-                <dt>偏爱类型</dt>
-                <dd>{summary.dominantGenre ?? "数据追踪中"}</dd>
+                <dt>{summary.tier.label}</dt>
+                <dd>{summary.tier.description}</dd>
               </div>
               <div>
-                <dt>主恒星</dt>
-                <dd>{summary.mainStar.name}</dd>
+                <dt>{summary.preference.label}</dt>
+                <dd>{summary.preference.description}</dd>
               </div>
             </dl>
           </section>
@@ -358,9 +364,12 @@ function GalaxyPoster({ report }: { report: ReportData }) {
             </ol>
           </section>
 
-          <footer className={styles.posterFooter}>
+          <section
+            className={styles.posterQrSection}
+            aria-label="创建你的游戏星系"
+          >
             <div>
-              <p>你属于：{summary.persona}</p>
+              <p>扫描创建你的游戏星系</p>
               <dl>
                 <div>
                   <dt>总航程</dt>
@@ -383,9 +392,8 @@ function GalaxyPoster({ report }: { report: ReportData }) {
               ) : (
                 <span>生成二维码中</span>
               )}
-              <small>扫码创建你的星系</small>
             </aside>
-          </footer>
+          </section>
         </article>
 
         {shareMessage && (

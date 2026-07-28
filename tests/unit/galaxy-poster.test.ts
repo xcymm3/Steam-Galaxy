@@ -24,7 +24,11 @@ describe("galaxy poster summary", () => {
       "Dust Shelf",
       "Unlit Harbor",
     ]);
-    expect(summary.persona).toBe("初启探索型玩家");
+    expect(summary.tier.label).toBe("近地");
+    expect(summary.preference).toMatchObject({
+      label: "漫游型",
+      description: "没有明显的单一游玩偏好",
+    });
   });
 
   it("calculates the main star share from the report total", () => {
