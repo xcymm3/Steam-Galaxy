@@ -49,23 +49,22 @@ function matchesDuration(
   }
 }
 
-function createFilteredGalaxy(
+function matchesSearch(node: GalaxyModel["games"][number], search: string) {
+  return (
+    node.game.name.toLocaleLowerCase("zh-CN").includes(search) ||
+    String(node.appId).includes(search)
+  );
+}
+
+function createDurationFilteredGalaxy(
   galaxy: GalaxyModel,
-  search: string,
   durationFilter: DurationFilter,
 ): GalaxyModel {
   return {
     ...galaxy,
-    games: galaxy.games.filter((node) => {
-      const matchesSearch =
-        !search ||
-        node.game.name.toLocaleLowerCase("zh-CN").includes(search) ||
-        String(node.appId).includes(search);
-      return (
-        matchesSearch &&
-        matchesDuration(node.game.playtimeMinutes, durationFilter)
-      );
-    }),
+    games: galaxy.games.filter((node) =>
+      matchesDuration(node.game.playtimeMinutes, durationFilter),
+    ),
   };
 }
 
@@ -75,12 +74,23 @@ export function GalaxyWorkbench({ report }: GalaxyWorkbenchProps) {
   const [durationFilter, setDurationFilter] = useState<DurationFilter>("all");
   const [isFilterDockOpen, setFilterDockOpen] = useState(false);
   const deferredSearch = useDeferredValue(normalizeSearch(searchInput));
-  const filteredGalaxy = useMemo(
-    () => createFilteredGalaxy(galaxy, deferredSearch, durationFilter),
-    [deferredSearch, durationFilter, galaxy],
+  const durationFilteredGalaxy = useMemo(
+    () => createDurationFilteredGalaxy(galaxy, durationFilter),
+    [durationFilter, galaxy],
   );
+  const searchedNodeId = useMemo(() => {
+    if (!deferredSearch) {
+      return null;
+    }
+
+    return (
+      durationFilteredGalaxy.games.find((node) =>
+        matchesSearch(node, deferredSearch),
+      )?.id ?? null
+    );
+  }, [deferredSearch, durationFilteredGalaxy.games]);
   const hasActiveFilters = Boolean(searchInput) || durationFilter !== "all";
-  const visibleGameCount = filteredGalaxy.games.length;
+  const visibleGameCount = durationFilteredGalaxy.games.length;
 
   const resetFilters = () => {
     setSearchInput("");
@@ -170,9 +180,10 @@ export function GalaxyWorkbench({ report }: GalaxyWorkbenchProps) {
             </div>
           </details>
           <StarMap
-            galaxy={filteredGalaxy}
+            focusedNodeId={deferredSearch ? searchedNodeId : null}
+            galaxy={durationFilteredGalaxy}
             gameMetadataByAppId={report.gameMetadata.games}
-            emptyMessage="没有可匹配的可探索星体。试试清空筛选，或搜索另一款游戏。"
+            emptyMessage="这个时长范围内没有可探索星体。试试调整筛选条件。"
           />
         </section>
       </div>

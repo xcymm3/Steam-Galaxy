@@ -48,6 +48,7 @@ import styles from "./galaxy-workbench.module.css";
 
 interface StarMapProps {
   emptyMessage?: string;
+  focusedNodeId?: string | null;
   galaxy: GalaxyModel;
   gameMetadataByAppId: Record<string, SteamStoreGameMetadata>;
 }
@@ -471,11 +472,15 @@ export function GalaxyGamePanel({
 
 export function StarMap({
   emptyMessage = "当前公开库存没有可绘制的游戏记录。",
+  focusedNodeId,
   galaxy,
   gameMetadataByAppId,
 }: StarMapProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const focusControllerRef = useRef<() => void>(() => {});
+  const selectionControllerRef = useRef<(nodeId: string | null) => void>(
+    () => {},
+  );
   const paletteControllerRef = useRef<
     (appId: number, palette: SteamImagePalette) => void
   >(() => {});
@@ -701,6 +706,18 @@ export function StarMap({
 
       requestMetadata(node.appId);
       setSelectedId(node.id);
+    };
+    selectionControllerRef.current = (nodeId) => {
+      if (!nodeId) {
+        applyFocus(null);
+        setSelectedId(null);
+        return;
+      }
+
+      const body = bodyById.get(nodeId);
+      if (body) {
+        selectPlanet(body.node);
+      }
     };
 
     const coreBody = galaxyScene.bodies.find((body) => body.isCore) ?? null;
@@ -999,6 +1016,7 @@ export function StarMap({
       window.cancelAnimationFrame(animationFrame);
       controls.dispose();
       focusControllerRef.current = () => {};
+      selectionControllerRef.current = () => {};
       paletteControllerRef.current = () => {};
       disposableTextures.forEach((texture) => texture.dispose());
       disposableMaterials.forEach((material) => material.dispose());
@@ -1007,6 +1025,18 @@ export function StarMap({
       mount.replaceChildren();
     };
   }, [galaxyScene, requestMetadata]);
+
+  useEffect(() => {
+    if (focusedNodeId === undefined) {
+      return;
+    }
+
+    const selectionFrame = window.requestAnimationFrame(() => {
+      selectionControllerRef.current(focusedNodeId);
+    });
+
+    return () => window.cancelAnimationFrame(selectionFrame);
+  }, [focusedNodeId]);
 
   useEffect(() => {
     if (selectedId && !galaxy.games.some((node) => node.id === selectedId)) {

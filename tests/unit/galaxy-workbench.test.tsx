@@ -73,14 +73,14 @@ describe("GalaxyWorkbench", () => {
     ).toBe("/");
   });
 
-  it("filters the interactive bodies by name and cumulative duration", async () => {
+  it("uses search to focus the first matching body without filtering the galaxy", async () => {
     const user = userEvent.setup();
 
     render(<GalaxyWorkbench report={report} />);
 
     const search = screen.getByRole("searchbox", { name: "寻找星体" });
     await user.type(search, "Main Sequence");
-    expect(await screen.findByText("1 / 6")).toBeTruthy();
+    expect(await screen.findByText("6 / 6")).toBeTruthy();
 
     await user.clear(search);
     await user.click(screen.getByRole("button", { name: "100 小时+" }));
@@ -90,12 +90,7 @@ describe("GalaxyWorkbench", () => {
     await user.click(screen.getByRole("button", { name: "100 小时内" }));
     expect(await screen.findByText("5 / 6")).toBeTruthy();
     await user.type(search, "Main Sequence");
-    expect(await screen.findByText("0 / 6")).toBeTruthy();
-    expect(
-      screen.getByText(
-        "没有可匹配的可探索星体。试试清空筛选，或搜索另一款游戏。",
-      ),
-    ).toBeTruthy();
+    expect(await screen.findByText("5 / 6")).toBeTruthy();
 
     expect(screen.queryByRole("button", { name: "已点亮" })).toBeNull();
     expect(screen.queryByRole("button", { name: "未点亮" })).toBeNull();
