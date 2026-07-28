@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useDeferredValue, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useMemo, useState } from "react";
 
 import type { GalaxyModel } from "@/lib/report/galaxy";
 import type { ReportData } from "@/lib/report/types";
 
 import { StarMap } from "./star-map";
+import { savePosterImageSession } from "./report-session";
 import styles from "./galaxy-workbench.module.css";
 
 interface GalaxyWorkbenchProps {
@@ -73,6 +74,9 @@ export function GalaxyWorkbench({ report }: GalaxyWorkbenchProps) {
   const [searchInput, setSearchInput] = useState("");
   const [durationFilter, setDurationFilter] = useState<DurationFilter>("all");
   const [isFilterDockOpen, setFilterDockOpen] = useState(false);
+  const [isPosterCapturing, setPosterCapturing] = useState(false);
+  const [posterCaptureRequest, setPosterCaptureRequest] = useState(0);
+  const [posterError, setPosterError] = useState("");
   const deferredSearch = useDeferredValue(normalizeSearch(searchInput));
   const durationFilteredGalaxy = useMemo(
     () => createDurationFilteredGalaxy(galaxy, durationFilter),
@@ -96,6 +100,25 @@ export function GalaxyWorkbench({ report }: GalaxyWorkbenchProps) {
     setSearchInput("");
     setDurationFilter("all");
   };
+
+  const beginPosterCapture = () => {
+    setPosterError("");
+    setPosterCapturing(true);
+    setPosterCaptureRequest((current) => current + 1);
+  };
+
+  const handlePosterCapture = useCallback((imageDataUrl: string | null) => {
+    if (
+      !imageDataUrl ||
+      !savePosterImageSession(window.sessionStorage, imageDataUrl)
+    ) {
+      setPosterCapturing(false);
+      setPosterError("无法截取当前星图。请稍后重试。");
+      return;
+    }
+
+    window.location.assign("/poster");
+  }, []);
 
   return (
     <main className={styles.workbenchRoot}>
@@ -127,7 +150,27 @@ export function GalaxyWorkbench({ report }: GalaxyWorkbenchProps) {
           <div className={styles.panelHeader}>
             <div>
               <h2 id="map-title">星图</h2>
+              {posterError && (
+                <p className={styles.posterError} role="alert">
+                  {posterError}
+                </p>
+              )}
             </div>
+            <button
+              className={styles.posterButton}
+              type="button"
+              data-state={
+                isPosterCapturing
+                  ? "loading"
+                  : posterError
+                    ? "error"
+                    : "default"
+              }
+              onClick={beginPosterCapture}
+              disabled={isPosterCapturing}
+            >
+              {isPosterCapturing ? "正在取景…" : "一键生成海报"}
+            </button>
           </div>
           <details
             className={styles.filterDock}
@@ -183,6 +226,8 @@ export function GalaxyWorkbench({ report }: GalaxyWorkbenchProps) {
             focusedNodeId={deferredSearch ? searchedNodeId : null}
             galaxy={durationFilteredGalaxy}
             gameMetadataByAppId={report.gameMetadata.games}
+            onPosterCapture={handlePosterCapture}
+            posterCaptureRequest={posterCaptureRequest}
             emptyMessage="这个时长范围内没有可探索星体。试试调整筛选条件。"
           />
         </section>

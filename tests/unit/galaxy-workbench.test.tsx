@@ -29,6 +29,7 @@ describe("GalaxyWorkbench", () => {
         name: "夜航员_01 的游戏星系",
       }),
     ).toBeTruthy();
+    expect(screen.getByRole("button", { name: "一键生成海报" })).toBeTruthy();
     expect(
       screen.getByRole("heading", {
         level: 2,

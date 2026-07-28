@@ -1,0 +1,471 @@
+/* Hallmark · component: share poster · genre: atmospheric · theme: Aurora
+ * states: default · hover · focus · active · disabled · loading · error · success
+ * contrast: pass (46–50) · pre-emit critique: P5 H5 E5 S5 R4 V4
+ */
+
+.posterPage,
+.posterLoading,
+.posterRecovery {
+  min-height: 100dvh;
+  background: var(--color-story-paper);
+  color: var(--color-story-ink);
+  font-family: var(--font-story-body);
+}
+
+.posterLoading,
+.posterRecovery {
+  display: grid;
+  place-content: center;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.posterRecovery h1,
+.posterRecovery p {
+  max-width: 28rem;
+  margin: 0;
+}
+
+.posterRecovery h1,
+.posterNotes h1,
+.posterPlanets h2 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-story-display);
+  letter-spacing: var(--tracking-display);
+}
+
+.posterRecovery h1 {
+  font-size: var(--text-story-display);
+  line-height: 0.98;
+}
+
+.posterRecovery p {
+  color: var(--color-story-muted);
+  line-height: var(--leading-copy);
+}
+
+.posterRecovery a,
+.posterBackLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--control-min);
+  color: var(--color-story-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--color-story-accent);
+  text-underline-offset: var(--rule-focus);
+  white-space: nowrap;
+}
+
+.posterHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: min(100%, var(--layout-story-max));
+  margin-inline: auto;
+  padding-block: max(var(--space-3), env(safe-area-inset-top)) var(--space-3);
+  padding-inline: max(var(--space-3), env(safe-area-inset-right))
+    max(var(--space-3), env(safe-area-inset-left));
+}
+
+.posterShareButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--control-min);
+  padding-inline: var(--space-4);
+  border: var(--rule-hair) solid var(--color-story-accent);
+  border-radius: var(--radius-pill);
+  background: var(--color-story-accent);
+  color: var(--color-story-accent-ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-short) var(--ease-out),
+    color var(--dur-short) var(--ease-out),
+    transform var(--dur-short) var(--ease-out);
+}
+
+.posterShareButton[data-state="loading"] {
+  background: var(--color-story-surface-raised);
+  color: var(--color-story-muted);
+}
+
+.posterShareButton[data-state="success"] {
+  background: var(--color-story-success);
+  color: var(--color-story-accent-ink);
+}
+
+.posterShareButton[data-state="error"] {
+  border-color: var(--color-story-danger);
+  background: var(--color-story-paper);
+  color: var(--color-story-danger);
+}
+
+.posterShareButton:disabled {
+  border-color: var(--color-story-rule);
+  color: var(--color-story-faint);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.posterBackLink:focus-visible,
+.posterRecovery a:focus-visible,
+.posterShareButton:focus-visible {
+  outline: var(--rule-focus) solid var(--color-story-focus);
+  outline-offset: var(--rule-focus-offset);
+}
+
+.posterShareButton:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.posterShell {
+  display: grid;
+  align-items: start;
+  gap: var(--space-6);
+  width: min(100%, var(--layout-story-max));
+  margin-inline: auto;
+  padding-inline: max(var(--space-3), env(safe-area-inset-right))
+    max(var(--space-3), env(safe-area-inset-left));
+  padding-block-end: max(var(--space-6), env(safe-area-inset-bottom));
+}
+
+.posterCard {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+  padding: var(--space-5);
+  border: var(--rule-hair) solid var(--color-story-rule-strong);
+  background: var(--color-story-surface);
+}
+
+.posterMasthead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-inline-start: var(--space-3);
+  border-inline-start: var(--rule-focus) solid var(--color-story-accent);
+  color: var(--color-story-accent);
+  font-family: var(--font-story-mono);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+}
+
+.posterMasthead span:last-child {
+  color: var(--color-story-faint);
+  font-weight: 400;
+  text-align: end;
+}
+
+.posterHeadline {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.posterHeadline p {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.posterHeadline p:first-child {
+  color: var(--color-story-ink);
+  font-family: var(--font-story-display);
+  font-size: clamp(1.75rem, 8vw, 3.25rem);
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+  line-height: 0.96;
+}
+
+.posterHeadline p:last-child {
+  color: var(--color-story-muted);
+  font-size: var(--text-base);
+  line-height: var(--leading-copy);
+}
+
+.posterScreenshot {
+  position: relative;
+  min-width: 0;
+  aspect-ratio: 1.66;
+  margin: 0;
+  overflow: clip;
+  border: var(--rule-hair) solid var(--color-story-accent);
+  background: var(--color-story-paper);
+}
+
+.posterScreenshot img,
+.posterScreenshot > div {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.posterScreenshot img {
+  object-fit: cover;
+}
+
+.posterScreenshot > div {
+  display: grid;
+  place-items: center;
+  color: var(--color-story-faint);
+  font-family: var(--font-story-mono);
+  font-size: var(--text-sm);
+}
+
+.posterScreenshot figcaption {
+  position: absolute;
+  inset-inline-start: var(--space-3);
+  inset-block-end: var(--space-3);
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-story-paper);
+  color: var(--color-story-ink);
+  font-family: var(--font-story-mono);
+  font-size: var(--text-xs);
+}
+
+.posterPlanets {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.posterSectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.posterPlanets h2 {
+  margin: 0;
+  font-size: var(--text-xl);
+  line-height: 1;
+}
+
+.posterSectionHead span {
+  flex: 0 0 auto;
+  color: var(--color-story-faint);
+  font-family: var(--font-story-mono);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.posterPlanets ol {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.posterPlanets li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+  padding-block: var(--space-2);
+  border-bottom: var(--rule-hair) solid var(--color-story-rule);
+}
+
+.posterPlanets li > span {
+  color: var(--color-story-accent);
+  font-family: var(--font-story-mono);
+  font-size: var(--text-xs);
+}
+
+.posterPlanets strong,
+.posterPlanets em {
+  min-width: 0;
+  font-style: normal;
+}
+
+.posterPlanets strong {
+  overflow: hidden;
+  color: var(--color-story-ink);
+  font-size: var(--text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.posterPlanets em {
+  color: var(--color-story-muted);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.posterFooter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: var(--rule-hair) solid var(--color-story-rule-strong);
+}
+
+.posterFooter > div {
+  min-width: 0;
+}
+
+.posterFooter > div > p {
+  margin: 0 0 var(--space-3);
+  color: var(--color-story-accent);
+  font-family: var(--font-story-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+}
+
+.posterFooter dl,
+.posterNotes dl {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.posterFooter dl {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.posterFooter dt,
+.posterNotes dt {
+  color: var(--color-story-faint);
+  font-family: var(--font-story-mono);
+  font-size: var(--text-xs);
+}
+
+.posterFooter dd,
+.posterNotes dd {
+  min-width: 0;
+  margin: var(--space-1) 0 0;
+  overflow-wrap: anywhere;
+  color: var(--color-story-ink);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.posterFooter aside {
+  display: grid;
+  grid-template-columns: auto;
+  justify-items: center;
+  align-content: center;
+  gap: var(--space-1);
+  width: 5.5rem;
+  min-height: 5.5rem;
+  padding: var(--space-1);
+  background: var(--color-story-accent-ink);
+  color: var(--color-story-muted);
+  font-family: var(--font-story-mono);
+  font-size: var(--text-xs);
+  text-align: center;
+}
+
+.posterFooter aside img {
+  display: block;
+  width: 4.25rem;
+  height: 4.25rem;
+}
+
+.posterFooter aside small {
+  color: var(--color-story-muted);
+  font: inherit;
+}
+
+.posterNotes {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-5);
+  border-top: var(--rule-focus) solid var(--color-story-accent);
+  background: var(--color-story-surface-raised);
+  color: var(--color-story-ink);
+}
+
+.posterNotes > p:first-child {
+  margin: 0;
+  color: var(--color-story-accent);
+  font-family: var(--font-story-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-label);
+}
+
+.posterNotes h1 {
+  margin: 0;
+  font-size: var(--text-story-title);
+  line-height: 0.96;
+}
+
+.posterShareCopy,
+.posterShareMessage {
+  margin: 0;
+  color: var(--color-story-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-copy);
+}
+
+.posterShareMessage[data-state="success"] {
+  color: var(--color-story-success);
+}
+
+.posterShareMessage[data-state="error"] {
+  color: var(--color-story-danger);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .posterShareButton:hover:not(:disabled) {
+    background: var(--color-story-ink);
+    color: var(--color-story-paper);
+    transform: translateY(-1px);
+  }
+
+  .posterBackLink:hover,
+  .posterRecovery a:hover {
+    color: var(--color-story-accent);
+  }
+}
+
+@media (min-width: 62rem) {
+  .posterShell {
+    grid-template-columns: minmax(0, 1.5fr) minmax(16rem, 0.55fr);
+  }
+
+  .posterNotes {
+    position: sticky;
+    inset-block-start: var(--space-3);
+  }
+}
+
+@media (max-width: 30rem) {
+  .posterMasthead span:last-child {
+    display: none;
+  }
+
+  .posterPlanets ol {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .posterFooter dl {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .posterShareButton {
+    transition: none;
+  }
+
+  .posterShareButton:active:not(:disabled),
+  .posterShareButton:hover:not(:disabled) {
+    transform: none;
+  }
+}

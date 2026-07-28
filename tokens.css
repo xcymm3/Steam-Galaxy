@@ -37,6 +37,7 @@
   --color-story-ice: oklch(78% 0.05 220);
   --color-story-gas: oklch(67% 0.11 82);
   --color-story-nebula: oklch(53% 0.12 307);
+  --color-story-poster-overlay: oklch(8% 0.02 252 / 0.24);
 
   --font-display: var(--font-bricolage), "Microsoft YaHei", sans-serif;
   --font-body: var(--font-geist), "Microsoft YaHei", sans-serif;

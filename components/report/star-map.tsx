@@ -51,6 +51,8 @@ interface StarMapProps {
   focusedNodeId?: string | null;
   galaxy: GalaxyModel;
   gameMetadataByAppId: Record<string, SteamStoreGameMetadata>;
+  onPosterCapture?: (imageDataUrl: string | null) => void;
+  posterCaptureRequest?: number;
 }
 
 export interface GalaxyGamePanelProps {
@@ -475,6 +477,8 @@ export function StarMap({
   focusedNodeId,
   galaxy,
   gameMetadataByAppId,
+  onPosterCapture,
+  posterCaptureRequest = 0,
 }: StarMapProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const focusControllerRef = useRef<() => void>(() => {});
@@ -487,6 +491,7 @@ export function StarMap({
   const metadataByAppIdRef = useRef(gameMetadataByAppId);
   const paletteByAppIdRef = useRef(new Map<number, SteamImagePalette>());
   const paletteRequestedAppIdsRef = useRef(new Set<number>());
+  const lastPosterCaptureRequestRef = useRef(0);
   const requestedAppIdsRef = useRef(new Set(Object.keys(gameMetadataByAppId)));
   const galaxyScene = useMemo(() => createGalaxyScene(galaxy), [galaxy]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -1037,6 +1042,28 @@ export function StarMap({
 
     return () => window.cancelAnimationFrame(selectionFrame);
   }, [focusedNodeId]);
+
+  useEffect(() => {
+    if (
+      !posterCaptureRequest ||
+      posterCaptureRequest === lastPosterCaptureRequestRef.current
+    ) {
+      return;
+    }
+
+    lastPosterCaptureRequestRef.current = posterCaptureRequest;
+    const captureFrame = window.requestAnimationFrame(() => {
+      const canvas = mountRef.current?.querySelector("canvas");
+
+      try {
+        onPosterCapture?.(canvas?.toDataURL("image/png") ?? null);
+      } catch {
+        onPosterCapture?.(null);
+      }
+    });
+
+    return () => window.cancelAnimationFrame(captureFrame);
+  }, [onPosterCapture, posterCaptureRequest]);
 
   useEffect(() => {
     if (selectedId && !galaxy.games.some((node) => node.id === selectedId)) {

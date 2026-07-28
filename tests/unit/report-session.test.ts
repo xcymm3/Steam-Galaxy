@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import { analyzeSteamSnapshot } from "@/lib/report/analyze";
 import {
   clearReportSession,
+  loadPosterImageSession,
   loadReportSession,
+  savePosterImageSession,
   saveReportSession,
 } from "@/components/report/report-session";
 
@@ -55,11 +57,27 @@ describe("report session", () => {
     const storage = new MemoryStorage();
 
     expect(saveReportSession(storage, report)).toBe(true);
+    expect(
+      savePosterImageSession(storage, "data:image/png;base64,fixture"),
+    ).toBe(true);
     storage.setItem("steam-report:page:v1", "4");
     clearReportSession(storage);
 
     expect(loadReportSession(storage)).toBeNull();
+    expect(loadPosterImageSession(storage)).toBeNull();
     expect(storage.getItem("steam-report:page:v1")).toBeNull();
+  });
+
+  it("stores a captured galaxy image only when it is an image data URL", () => {
+    const storage = new MemoryStorage();
+
+    expect(savePosterImageSession(storage, "not-an-image")).toBe(false);
+    expect(
+      savePosterImageSession(storage, "data:image/png;base64,fixture"),
+    ).toBe(true);
+    expect(loadPosterImageSession(storage)).toBe(
+      "data:image/png;base64,fixture",
+    );
   });
 
   it("fails safely when browser storage is blocked", () => {
