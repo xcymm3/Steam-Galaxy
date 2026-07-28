@@ -11,7 +11,7 @@ import {
 } from "@/lib/report/galaxy-poster";
 import type { ReportData } from "@/lib/report/types";
 
-import { loadPosterImageSession, loadReportSession } from "./report-session";
+import { loadReportSession } from "./report-session";
 import styles from "./galaxy-poster.module.css";
 
 type ShareState = "default" | "error" | "loading" | "success";
@@ -19,8 +19,8 @@ type ShareState = "default" | "error" | "loading" | "success";
 interface PosterCanvasOptions {
   origin: string;
   qrDataUrl: string;
-  screenshotDataUrl: string | null;
   summary: GalaxyPosterSummary;
+  playerName: string;
 }
 
 function formatHours(hours: number) {
@@ -70,37 +70,10 @@ function loadImage(source: string) {
   });
 }
 
-function drawImageCover(
-  context: CanvasRenderingContext2D,
-  image: HTMLImageElement,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-) {
-  const scale = Math.max(width / image.width, height / image.height);
-  const sourceWidth = width / scale;
-  const sourceHeight = height / scale;
-  const sourceX = (image.width - sourceWidth) / 2;
-  const sourceY = (image.height - sourceHeight) / 2;
-
-  context.drawImage(
-    image,
-    sourceX,
-    sourceY,
-    sourceWidth,
-    sourceHeight,
-    x,
-    y,
-    width,
-    height,
-  );
-}
-
 async function createPosterImage({
   origin,
+  playerName,
   qrDataUrl,
-  screenshotDataUrl,
   summary,
 }: PosterCanvasOptions) {
   const canvas = document.createElement("canvas");
@@ -153,31 +126,37 @@ async function createPosterImage({
   );
 
   context.fillStyle = paper;
-  context.fillRect(80, 428, 920, 380);
-  if (screenshotDataUrl) {
-    const screenshot = await loadImage(screenshotDataUrl);
-    drawImageCover(context, screenshot, 80, 428, 920, 380);
-  }
+  context.fillRect(80, 428, 920, 182);
   context.fillStyle = overlay;
-  context.fillRect(80, 428, 920, 380);
+  context.fillRect(80, 428, 920, 182);
   context.strokeStyle = accent;
-  context.strokeRect(80, 428, 920, 380);
+  context.strokeRect(80, 428, 920, 182);
+  context.fillStyle = accent;
+  context.font = '700 22px "Microsoft YaHei", sans-serif';
+  context.fillText("可分享档案", 108, 470);
   context.fillStyle = ink;
-  context.font = '700 24px "Microsoft YaHei", sans-serif';
-  context.fillText("当前星图快照", 104, 776);
+  context.font = '700 40px "Microsoft YaHei", sans-serif';
+  context.fillText(`${trimText(playerName, 18)} 的游戏星系`, 108, 528);
+  context.fillStyle = muted;
+  context.font = '400 25px "Microsoft YaHei", sans-serif';
+  context.fillText(
+    `偏爱类型：${summary.dominantGenre ?? "数据追踪中"}`,
+    108,
+    570,
+  );
 
   context.fillStyle = ink;
   context.font = '700 34px "Microsoft YaHei", sans-serif';
-  context.fillText("你的八大行星太阳系", 80, 874);
+  context.fillText("你的八大行星太阳系", 80, 692);
   context.fillStyle = muted;
   context.font = '400 23px "Microsoft YaHei", sans-serif';
-  context.fillText("按累计时长排序", 80, 910);
+  context.fillText("按累计时长排序", 80, 728);
 
   summary.planets.forEach((planet, index) => {
     const column = index % 2;
     const row = Math.floor(index / 2);
     const x = 80 + column * 470;
-    const y = 968 + row * 68;
+    const y = 786 + row * 68;
     context.fillStyle = accent;
     context.fillRect(x, y - 25, 8, 36);
     context.fillStyle = ink;
@@ -194,26 +173,26 @@ async function createPosterImage({
 
   context.strokeStyle = rule;
   context.beginPath();
-  context.moveTo(80, 1262);
-  context.lineTo(1000, 1262);
+  context.moveTo(80, 1080);
+  context.lineTo(1000, 1080);
   context.stroke();
   context.fillStyle = accent;
   context.font = '700 30px "Microsoft YaHei", sans-serif';
-  context.fillText(`你属于：${summary.persona}`, 80, 1320);
+  context.fillText(`你属于：${summary.persona}`, 80, 1138);
   context.fillStyle = muted;
   context.font = '400 22px "Microsoft YaHei", sans-serif';
-  context.fillText(`总航程 ${formatHours(summary.totalHours)} 小时`, 80, 1360);
-  context.fillText(`库存 ${summary.totalGameCount} 款`, 332, 1360);
-  context.fillText(`未启动 ${summary.unplayedGameCount} 款`, 554, 1360);
+  context.fillText(`总航程 ${formatHours(summary.totalHours)} 小时`, 80, 1178);
+  context.fillText(`库存 ${summary.totalGameCount} 款`, 332, 1178);
+  context.fillText(`未启动 ${summary.unplayedGameCount} 款`, 554, 1178);
 
   const qrCode = await loadImage(qrDataUrl);
   context.fillStyle = accentInk;
-  context.fillRect(836, 1278, 164, 114);
-  context.drawImage(qrCode, 850, 1292, 86, 86);
+  context.fillRect(836, 1096, 164, 114);
+  context.drawImage(qrCode, 850, 1110, 86, 86);
   context.fillStyle = accent;
   context.font = '400 17px "Microsoft YaHei", sans-serif';
-  context.fillText("扫码创建", 944, 1328);
-  context.fillText("你的星系", 944, 1354);
+  context.fillText("扫码创建", 944, 1146);
+  context.fillText("你的星系", 944, 1172);
   context.fillText(origin.replace(/^https?:\/\//u, ""), 80, 1408);
 
   return new Promise<Blob>((resolve, reject) => {
@@ -238,13 +217,7 @@ function PosterRecovery() {
   );
 }
 
-function GalaxyPoster({
-  report,
-  screenshotDataUrl,
-}: {
-  report: ReportData;
-  screenshotDataUrl: string | null;
-}) {
+function GalaxyPoster({ report }: { report: ReportData }) {
   const summary = useMemo(() => createGalaxyPosterSummary(report), [report]);
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [shareState, setShareState] = useState<ShareState>("default");
@@ -286,8 +259,8 @@ function GalaxyPoster({
     try {
       const posterImage = await createPosterImage({
         origin,
+        playerName: report.player.displayName,
         qrDataUrl,
-        screenshotDataUrl,
         summary,
       });
       const posterFile = new File([posterImage], "steam-galaxy-poster.png", {
@@ -351,15 +324,20 @@ function GalaxyPoster({
             </p>
           </div>
 
-          <figure className={styles.posterScreenshot}>
-            {screenshotDataUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element -- The canvas capture is a session-only data URL and cannot use the image optimizer.
-              <img src={screenshotDataUrl} alt="当前 Steam 游戏星图截图" />
-            ) : (
-              <div>星图快照不可用</div>
-            )}
-            <figcaption>当前星图快照</figcaption>
-          </figure>
+          <section className={styles.posterArchive} aria-label="可分享档案">
+            <p>可分享档案</p>
+            <h2>{report.player.displayName} 的游戏星系</h2>
+            <dl>
+              <div>
+                <dt>偏爱类型</dt>
+                <dd>{summary.dominantGenre ?? "数据追踪中"}</dd>
+              </div>
+              <div>
+                <dt>主恒星</dt>
+                <dd>{summary.mainStar.name}</dd>
+              </div>
+            </dl>
+          </section>
 
           <section
             className={styles.posterPlanets}
@@ -410,30 +388,15 @@ function GalaxyPoster({
           </footer>
         </article>
 
-        <aside className={styles.posterNotes}>
-          <p>可分享档案</p>
-          <h1>{report.player.displayName} 的游戏星系</h1>
-          <dl>
-            <div>
-              <dt>主恒星</dt>
-              <dd>{summary.mainStar.name}</dd>
-            </div>
-            <div>
-              <dt>偏爱类型</dt>
-              <dd>{summary.dominantGenre ?? "数据追踪中"}</dd>
-            </div>
-          </dl>
-          <p className={styles.posterShareCopy}>{shareCopy}</p>
-          {shareMessage && (
-            <p
-              className={styles.posterShareMessage}
-              data-state={shareState}
-              role={shareState === "error" ? "alert" : "status"}
-            >
-              {shareMessage}
-            </p>
-          )}
-        </aside>
+        {shareMessage && (
+          <p
+            className={styles.posterShareMessage}
+            data-state={shareState}
+            role={shareState === "error" ? "alert" : "status"}
+          >
+            {shareMessage}
+          </p>
+        )}
       </section>
     </main>
   );
@@ -441,12 +404,7 @@ function GalaxyPoster({
 
 export function GalaxyPosterExperience() {
   const [session, setSession] = useState<
-    | {
-        report: ReportData;
-        screenshotDataUrl: string | null;
-      }
-    | null
-    | undefined
+    { report: ReportData } | null | undefined
   >(undefined);
 
   useEffect(() => {
@@ -458,10 +416,7 @@ export function GalaxyPosterExperience() {
         return;
       }
 
-      setSession({
-        report,
-        screenshotDataUrl: loadPosterImageSession(window.sessionStorage),
-      });
+      setSession({ report });
     });
 
     return () => window.cancelAnimationFrame(sessionFrame);
@@ -472,10 +427,7 @@ export function GalaxyPosterExperience() {
   }
 
   return session?.report ? (
-    <GalaxyPoster
-      report={session.report}
-      screenshotDataUrl={session.screenshotDataUrl}
-    />
+    <GalaxyPoster report={session.report} />
   ) : (
     <PosterRecovery />
   );

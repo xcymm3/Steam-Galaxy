@@ -251,13 +251,6 @@
   transform: translateY(1px);
 }
 
-.posterError {
-  margin: var(--space-1) 0 0;
-  color: var(--color-story-danger);
-  font-size: var(--text-xs);
-  line-height: var(--leading-copy);
-}
-
 .filterDock {
   min-width: 0;
   margin-bottom: var(--space-2);

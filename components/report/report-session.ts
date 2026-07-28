@@ -1,7 +1,6 @@
 import type { ReportData } from "@/lib/report/types";
 
 const reportStorageKey = "steam-report:data:v3";
-const posterImageStorageKey = "steam-galaxy:poster-image:v1";
 const legacyProgressStorageKey = "steam-report:page:v1";
 const reportStorageVersion = 3;
 
@@ -83,33 +82,5 @@ export function loadReportSession(storage: SessionStorage): ReportData | null {
 
 export function clearReportSession(storage: SessionStorage): void {
   removeItemSafely(storage, reportStorageKey);
-  removeItemSafely(storage, posterImageStorageKey);
   removeItemSafely(storage, legacyProgressStorageKey);
-}
-
-export function savePosterImageSession(
-  storage: SessionStorage,
-  imageDataUrl: string,
-): boolean {
-  if (!imageDataUrl.startsWith("data:image/")) {
-    return false;
-  }
-
-  try {
-    storage.setItem(posterImageStorageKey, imageDataUrl);
-    return true;
-  } catch {
-    removeItemSafely(storage, posterImageStorageKey);
-    return false;
-  }
-}
-
-export function loadPosterImageSession(storage: SessionStorage): string | null {
-  try {
-    const imageDataUrl = storage.getItem(posterImageStorageKey);
-    return imageDataUrl?.startsWith("data:image/") ? imageDataUrl : null;
-  } catch {
-    removeItemSafely(storage, posterImageStorageKey);
-    return null;
-  }
 }
