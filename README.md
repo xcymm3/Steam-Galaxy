@@ -1,8 +1,10 @@
 # Steam Galaxy
 
-Steam Galaxy 是一个面向公开 Steam 游戏库的交互式 3D 可视化应用。它将玩家游玩时长最高的游戏映射为可探索的星体，并结合 Steam 商店元数据提供游戏档案、类型和商店跳转。
+Steam Galaxy 是一个面向公开 Steam 游戏库的交互式 3D 可视化应用。它将游玩时长最高的游戏映射为可探索的星体，并结合 Steam 商店元数据提供游戏档案、主题色和商店跳转。
 
-用户可输入 SteamID、Steam 个人资料链接或自定义 ID，也可通过 Steam OpenID 登录确认身份。应用不创建账户；生成的报告只保存在当前浏览器标签页的 `sessionStorage` 中。
+用户可输入 SteamID、Steam 个人资料链接或自定义 ID，也可通过 Steam OpenID 登录确认身份。应用不创建账户；应用数据仅保留在当前浏览器标签页的 `sessionStorage` 中。
+
+仓库：[xcymm3/Steam-Galaxy](https://github.com/xcymm3/Steam-Galaxy)
 
 ## 功能概览
 
@@ -13,6 +15,8 @@ Steam Galaxy 是一个面向公开 Steam 游戏库的交互式 3D 可视化应�
 - 支持按游戏名或 AppID 搜索；搜索不会过滤星图，而是聚焦第一个匹配的星体。
 - 点击星体后展示游戏档案，包括商店宣传图、累计时长、游戏类型与 Steam 商店链接。
 - 从 Steam 商店宣传图提取色板，为对应星体提供主题色；其余商店元数据按需加载。
+- 一键生成分享海报：展示主恒星、累计时长、前九款游戏、玩家称号与二维码，并支持系统原生分享或复制分享文案。
+- 按累计时长与游戏库行为生成“深空·专注型玩家”一类的可解释双维称号。
 - 为私密库存、无效 ID、Steam 服务异常和不支持 WebGL 的环境提供独立的降级反馈。
 
 ## 技术栈
@@ -34,7 +38,7 @@ Steam Galaxy 是一个面向公开 Steam 游戏库的交互式 3D 可视化应�
 | --------------------- | ------------------------------------------ |
 | `app/`                | Next.js 页面、路由与 API Route Handlers    |
 | `components/landing/` | SteamID 输入、身份确认与状态反馈           |
-| `components/report/`  | 星系工作台、Three.js 场景与游戏档案面板    |
+| `components/report/`  | 星系工作台、Three.js 场景、档案与分享海报  |
 | `lib/steam/`          | Steam Web API、OpenID 验证、商店元数据网关 |
 | `lib/report/`         | 游戏库标准化、统计计算与纯函数星系模型     |
 | `tests/`              | 单元测试与匿名 Steam 数据 fixtures         |
@@ -47,6 +51,7 @@ Steam Galaxy 是一个面向公开 Steam 游戏库的交互式 3D 可视化应�
 | `GET /api/steam/store/[appId]` | 按需读取单个游戏的公开商店元数据 |
 | `GET /api/auth/steam/start`    | 发起 Steam OpenID 登录           |
 | `GET /api/auth/steam/callback` | 校验 OpenID 回调并返回应用       |
+| `POST /api/auth/steam/consume` | 读取并消费当前登录流程的结果     |
 
 ## 本地开发
 
@@ -64,7 +69,7 @@ Copy-Item .env.example .env.local
 pnpm dev
 ```
 
-访问 [http://localhost:3000](http://localhost:3000)。在 `.env.local` 中配置 `STEAM_WEB_API_KEY` 后，即可读取公开 Steam 库。
+访问 [http://localhost:3000](http://localhost:3000)。在 `.env.local` 中配置 `STEAM_WEB_API_KEY` 后，即可读取公开 Steam 库；本地开发不需要配置 `APP_ORIGIN`。
 
 ## 环境变量
 
@@ -81,7 +86,7 @@ STEAM_STORE_COUNTRY_CODE=cn
 STEAM_STORE_LANGUAGE=schinese
 ```
 
-本地开发可不设置 `APP_ORIGIN`，应用会根据当前请求推导地址。生产部署应将其设为外部可访问的 HTTPS 站点根地址，且不要包含路径或尾部斜杠。所有敏感变量应在部署平台的环境变量管理中配置，不应提交到仓库。
+`APP_ORIGIN` 在本地开发时可留空，应用会根据当前请求推导地址。`STEAM_WEB_API_KEY` 仅应保存于本机 `.env.local`，不应提交到仓库。
 
 ## 质量检查
 
@@ -97,19 +102,6 @@ pnpm check
 ```
 
 GitHub Actions 会在推送到 `main` 分支和 Pull Request 时运行 `pnpm check`。
-
-## 部署
-
-该项目可部署至支持 Node.js 22 的服务平台，例如 Render。
-
-| 配置项        | 建议值                                         |
-| ------------- | ---------------------------------------------- |
-| Build Command | `pnpm install --frozen-lockfile && pnpm build` |
-| Start Command | `pnpm start`                                   |
-| Node.js       | 22.x                                           |
-| 必填环境变量  | `STEAM_WEB_API_KEY`、`APP_ORIGIN`              |
-
-部署后，将 `APP_ORIGIN` 配置为实际公开域名，例如 `https://your-service.onrender.com`；该值必须与 Steam OpenID 回调时使用的域名一致。
 
 ## 许可证
 
