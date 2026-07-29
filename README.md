@@ -4,7 +4,9 @@ Steam Galaxy 是一个面向公开 Steam 游戏库的交互式 3D 可视化应�
 
 用户可输入 SteamID、Steam 个人资料链接或自定义 ID，也可通过 Steam OpenID 登录确认身份。应用不创建账户；应用数据仅保留在当前浏览器标签页的 `sessionStorage` 中。
 
-仓库：[xcymm3/Steam-Galaxy](https://github.com/xcymm3/Steam-Galaxy)
+展示网站：[https://steam.xcymm3.top/](https://steam.xcymm3.top/)
+
+![Steam Galaxy 星系界面](docs/images/steam-galaxy.png)
 
 ## 功能概览
 
