@@ -120,6 +120,40 @@ h1 {
   text-wrap: balance;
 }
 
+.heroMeta {
+  display: grid;
+  gap: var(--space-2);
+  max-width: 28rem;
+  margin-top: var(--space-6);
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-copy);
+}
+
+.heroMeta p {
+  margin: 0;
+}
+
+.heroMeta a {
+  width: fit-content;
+  color: var(--color-ink-muted);
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent);
+  text-underline-offset: var(--rule-focus);
+  white-space: nowrap;
+}
+
+.heroMeta a:focus-visible {
+  outline: var(--rule-focus) solid var(--color-focus);
+  outline-offset: var(--rule-focus-offset);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .heroMeta a:hover {
+    color: var(--color-ink);
+  }
+}
+
 .lookupPanel {
   position: relative;
   padding: var(--space-panel);

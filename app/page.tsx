@@ -25,6 +25,16 @@ export default async function Home({ searchParams }: HomePageProps) {
           <div className="heroCopy">
             <p className="eyebrow">Steam game galaxy</p>
             <h1 id="page-title">你的 Steam 游戏星系。</h1>
+            <div className="heroMeta">
+              <p>用户所有数据仅留在当前浏览器会话，不会以任何形式保存。</p>
+              <a
+                href="https://github.com/xcymm3/Steam-Galaxy"
+                target="_blank"
+                rel="noreferrer"
+              >
+                GitHub · xcymm3/Steam-Galaxy
+              </a>
+            </div>
           </div>
           <SteamReportConsole authStatus={getAuthStatus(auth)} />
         </section>
